@@ -12,16 +12,42 @@
  // ADD METATAGS TO THE HEAD
  //-----------------------------------------------------------------------
 
-function sseo_metatags() {
+function sseo_metadescription() {
 
 	global $post;
-	$description = get_post_meta($post->ID, '_sseo_metadescription', true); ?>
-
-<meta type="description" content="<?php echo $description; ?>" />
+	$sseo_description = get_post_meta($post->ID, '_sseo_metadescription', true); ?>
+<meta type="description" content="<?php echo $sseo_description; ?>" />
 
 <?php }
 
-add_filter( 'wp_head', 'sseo_metatags', 1 );
+add_filter( 'wp_head', 'sseo_metadescription', 1 );
+
+function sseo_title() {
+
+	global $post;
+	$sseo_title = get_post_meta($post->ID, '_sseo_title', true);
+
+	return $sseo_title;
+}
+
+add_filter('pre_get_document_title', 'sseo_title', 10, 1);
+
+
+// ADD CSS TO THE ADMIN
+//-----------------------------------------------------------------------
+
+function sseo_admin_assets() {
+
+	// CSS
+	wp_register_style( 'sseo_admin_css', plugin_dir_url( __FILE__ ) . 'dist/styles.min.css', false, '1.0.2' );
+	wp_enqueue_style( 'sseo_admin_css' );
+
+	// JS
+	wp_register_script( 'sseo_admin_js', plugin_dir_url( __FILE__ ) . 'dist/functions.min.js', false, '1.0.2' );
+	wp_enqueue_script( 'sseo_admin_js' );
+}
+
+add_action( 'admin_enqueue_scripts', 'sseo_admin_assets' );
 
 
 // SETTINGS PAGE
@@ -92,12 +118,28 @@ class metaBox {
 
 		global $post;
     $values = get_post_custom( $post->ID );
-		$metadescription = isset( $values['_sseo_metadescription'] ) ? $values['_sseo_metadescription'][0] : '';
+		$sseo_title = isset( $values['_sseo_title'] ) ? $values['_sseo_title'][0] : '';
+		$sseo_title_default = get_the_title()." – ".get_bloginfo('title');
+		$sseo_metadescription = isset( $values['_sseo_metadescription'] ) ? $values['_sseo_metadescription'][0] : '';
 
 		wp_nonce_field( 'my_meta_box_nonce', 'meta_box_nonce' ); ?>
 
-		<p class="post-attributes-label-wrapper"><label class="post-attributes-label" for="sseo-metadescription">Metadescription</label></p>
-		<textarea name="metadescription" class="postbox" id="metadescription"><?php echo $metadescription; ?></textarea>
+		<div id="sseo-meta-editor">
+			<p class="post-attributes-label-wrapper"><label class="post-attributes-label" for="sseo-title">Title</label><span id="sseo-title-character-info"></span></p>
+			<input type="text" name="sseo-title" id="sseo-title" value="<?php echo $sseo_title; ?>" />
+			<input type="hidden" name="sseo-title-default" id="sseo-title-default" value="<?php echo $sseo_title_default; ?>" />
+			<p class="post-attributes-label-wrapper"><label class="post-attributes-label" for="sseo-metadescription">Metadescription</label><span id="sseo-metadescription-character-info"></span></p>
+			<textarea name="sseo-metadescription" class="postbox" id="sseo-metadescription"><?php echo $sseo_metadescription; ?></textarea>
+		</div>
+		<div id="sseo-preview">
+			<p class="post-attributes-label-wrapper post-attributes-label">Vorschau</p>
+			<div id="sseo-google-preview-wrapper">
+				<span id="sseo-preview-title"><?php if(!empty($sseo_title)): echo $sseo_title; else: echo $sseo_title_default; endif; ?></span>
+				<span id="sseo-preview-url"><?php the_permalink(); ?><span id="sseo-preview-url-arrow"></span></span>
+				<span id="sseo-preview-metadescription"><?php echo $sseo_metadescription; ?></span>
+			</div>
+		</div>
+		<div class="clear"></div>
 
 	<?php }
 
@@ -112,8 +154,11 @@ class metaBox {
     // if our current user can't edit this post, bail
     if( !current_user_can( 'edit_post' ) ) return;
 
-    if( isset( $_POST['metadescription'] ) )
-			update_post_meta( $post_id, '_sseo_metadescription', esc_attr( $_POST['metadescription'] ) );
+		if( isset( $_POST['sseo-title'] ) )
+			update_post_meta( $post_id, '_sseo_title', esc_attr( $_POST['sseo-title'] ) );
+
+    if( isset( $_POST['sseo-metadescription'] ) )
+			update_post_meta( $post_id, '_sseo_metadescription', esc_attr( $_POST['sseo-metadescription'] ) );
 
 	}
 
