@@ -3,6 +3,15 @@ jQuery(document).ready(function() {
   // GENERAL FUNCTIONS
   //-----------------------------------------------------------------------
 
+  // Delay something
+  var delay = (function(){
+    var timer = 0;
+    return function(callback, ms){
+    clearTimeout (timer);
+    timer = setTimeout(callback, ms);
+   };
+  })();
+
   // Displays the current and the max length
   function displayLength(inputfield, outputelement, okaylength, maxlength) {
     var length = jQuery(inputfield).val().length;
@@ -24,12 +33,18 @@ jQuery(document).ready(function() {
   //-----------------------------------------------------------------------
 
   // TITLE PATTERN
-  if (jQuery('#sseo_title_pattern').length) {
-    displayLength('#sseo_title_pattern', '#sseo_title_pattern_info', 45, 60);
-    jQuery('#sseo_title_pattern').on('input', function() {
-      displayLength('#sseo_title_pattern', '#sseo_title_pattern_info', 45, 60);
-    });
-  }
+  // if (jQuery('#sseo_title_pattern').length) {
+  //   displayLength('#sseo_title_pattern', '#sseo_title_pattern_info', 45, 60);
+  //   jQuery('#sseo_title_pattern').on('input', function() {
+  //     displayLength('#sseo_title_pattern', '#sseo_title_pattern_info', 45, 60);
+  //   });
+  // }
+
+  jQuery('.sseo-input-placeholder').click(function() {
+    var placeholder = jQuery(this).data('placeholder');
+    var target = jQuery(this).data('target');
+    jQuery('#'+target).val(jQuery('#'+target).val() + placeholder);
+  })
 
   // DEFAULT METADESCRIPTION
   if (jQuery('#sseo_default_metadescription').length) {
@@ -49,10 +64,29 @@ jQuery(document).ready(function() {
     displayLength('#sseo-title', '#sseo-title-info', 45, 60);
 
     jQuery('#sseo-title').on('input', function() {
-      if( !jQuery(this).val() ) {
+
+      var currentVal = jQuery(this).val();
+
+      if(!currentVal) {
         jQuery('#sseo-preview-title').html(jQuery('#sseo-title-default').val());
       } else {
         jQuery('#sseo-preview-title').html(jQuery('#sseo-title').val());
+
+        // Render the title after 1 second
+        delay(function(){
+
+          var pageid = jQuery('#sseo-pageid').val();
+
+          jQuery.ajax({
+              type: "POST",
+              url: "admin-ajax.php",
+              data: { action: 'generate_title', string: currentVal, pageid: pageid }
+            }).done(function(response) {
+              jQuery('#sseo-preview-title').html(response);
+              console.log(response);
+           });
+
+        }, 1000 );
       };
 
       displayLength('#sseo-title', '#sseo-title-info', 45, 60);
