@@ -9,12 +9,18 @@
 * License: GPL2
 */
 
+// AJAX ACTIONS
+//-----------------------------------------------------------------------
+
 add_action('wp_ajax_generate_title', 'ajax_generateTitle');
 
 function ajax_generateTitle() {
 	echo generateTitle($_POST['string'], $_POST['pageid']);
 	exit();
 }
+
+// GENERATE TITLE & DESCRIPTION
+//-----------------------------------------------------------------------
 
 function generateTitle($title, $pageid = NULL) {
 
@@ -31,11 +37,33 @@ function generateTitle($title, $pageid = NULL) {
 	return $title;
 }
 
-function generateMetadescription($postid, $field) {
-	$content = get_post_field('post_content', $postid);
-	$description = substr($content, 0, 152);
-	$description .= '...';
-	return $description;
+function generateMetadescription($postid) {
+
+	$field = esc_attr(get_option('sseo_metadescription_field'));
+
+	if($field == 'content'){
+		$content = get_post_field('post_content', $postid);
+	} elseif($field == 'acf'){
+
+		$field = get_field_objects($postid);
+
+		print_r($field);
+
+		$content = 'yo';
+	}
+
+	// Strip headings h1-h6
+	$content2 = preg_replace('/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6][^>]*>/', '', $content);
+	// Strip line breaks
+	$content3 = preg_replace('/\r|\n/', '', $content2);
+	// Strip all remaining tags
+	$content4 = wp_strip_all_tags($content3);
+	// Limit to 152 characters
+	$content5 = substr($content4, 0, 152);
+	// Add "..." to the end of the string
+	$content5 .= '...';
+
+	return $content5;
 }
 
 // ADD METATAGS TO THE HEAD
@@ -64,7 +92,7 @@ function sseo_metadescription() {
 		$sseo_description = get_post_meta($post->ID, '_sseo_metadescription', true);
 		// If empty, get default meta description
 		if(empty($sseo_description)) {
-			$sseo_description = generateMetadescription($post->ID, 'content');
+			$sseo_description = generateMetadescription($post->ID);
 		}
 		echo '<meta type="description" content="'.$sseo_description.'"/>'."\n";
 	}
@@ -155,8 +183,7 @@ function render_metabox() {
 	$sseo_title_default_string = esc_attr(get_option('sseo_title_pattern'));
 	$sseo_title_default = generateTitle($sseo_title_default_string);
 	$sseo_metadescription = isset( $values['_sseo_metadescription'] ) ? $values['_sseo_metadescription'][0] : '';
-	$sseo_metadescription_default = esc_attr(get_option('sseo_default_metadescription'));
-
+	$sseo_metadescription_default = generateMetadescription($post->ID, 'content');
 	wp_nonce_field( 'my_meta_box_nonce', 'meta_box_nonce' ); ?>
 
 	<div id="sseo-meta-editor">
