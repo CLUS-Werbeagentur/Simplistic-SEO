@@ -12,9 +12,7 @@
 add_action('wp_ajax_generate_title', 'ajax_generateTitle');
 
 function ajax_generateTitle() {
-
 	echo generateTitle($_POST['string'], $_POST['pageid']);
-
 	exit();
 }
 
@@ -33,23 +31,15 @@ function generateTitle($title, $pageid = NULL) {
 	return $title;
 }
 
-// ADD METATAGS TO THE HEAD
-//-----------------------------------------------------------------------
-
-function sseo_metadescription() {
-	global $post;
-	if($post){
-		// Get description from post meta
-		$sseo_description = get_post_meta($post->ID, '_sseo_metadescription', true);
-		// If empty, get default meta description
-		if(empty($sseo_description)) {
-			$sseo_description = esc_attr(get_option('sseo_default_metadescription'));
-		} ?>
-	<meta type="description" content="<?php echo $sseo_description; ?>" />
-	<?php }
+function generateMetadescription($postid, $field) {
+	$content = get_post_field('post_content', $postid);
+	$description = substr($content, 0, 152);
+	$description .= '...';
+	return $description;
 }
 
-add_filter( 'wp_head', 'sseo_metadescription', 1 );
+// ADD METATAGS TO THE HEAD
+//-----------------------------------------------------------------------
 
 function sseo_title() {
 	global $post;
@@ -66,6 +56,21 @@ function sseo_title() {
 }
 
 add_filter('pre_get_document_title', 'sseo_title', 10, 1);
+
+function sseo_metadescription() {
+	global $post;
+	if($post){
+		// Get description from post meta
+		$sseo_description = get_post_meta($post->ID, '_sseo_metadescription', true);
+		// If empty, get default meta description
+		if(empty($sseo_description)) {
+			$sseo_description = generateMetadescription($post->ID, 'content');
+		}
+		echo '<meta type="description" content="'.$sseo_description.'"/>'."\n";
+	}
+}
+
+add_filter( 'wp_head', 'sseo_metadescription', 1 );
 
 
 // ADD CSS TO THE ADMIN
@@ -109,8 +114,11 @@ function settings_page() { ?>
 					</div>
 					<h2>Metadescription</h2>
 					<div class="sseo-settings-input-wrapper">
-						<p><span class="sseo-settings-input-label">Diese Metadescription wird immer dann angezeigt, wenn für eine Seite keine spezifische Metadescription angegeben ist.</span><span id="sseo_default_metadescription_info" class="length-info"></span></p>
-						<textarea name="sseo_default_metadescription" class="large-text" id="sseo_default_metadescription"><?php echo esc_attr(get_option('sseo_default_metadescription')); ?></textarea>
+						<p><span class="sseo-settings-input-label">Ist für eine Seite keine spezifische Metadescription angegeben, kann aus dem hier ausgewählten Feld automatisch eine Metadescription generiert werden.</span>
+						<select name="sseo_metadescription_field" id="sseo_metadescription_field">
+							<option value="content" <?php selected(get_option('sseo_metadescription_field'), "content"); ?>>Inhalt</option>
+							<option value="acf" <?php selected(get_option('sseo_metadescription_field'), "acf"); ?>>ACF-Felder</option>
+						</select>
 					</div>
 				</div>
 				<div class="sseo-settings-right"></div>
@@ -124,7 +132,7 @@ function settings_page() { ?>
 
 function register_settings() {
 	register_setting( 'sseo_settings', 'sseo_title_pattern' );
-	register_setting( 'sseo_settings', 'sseo_default_metadescription' );
+	register_setting( 'sseo_settings', 'sseo_metadescription_field' );
 }
 
 add_action( 'admin_init', 'register_settings' );
@@ -134,7 +142,7 @@ add_action( 'admin_init', 'register_settings' );
 //-----------------------------------------------------------------------
 
 function register_metabox() {
-	add_meta_box( 'sseo-metabox', 'SEO Einstellungen', 'render_metabox', 'page' );
+	add_meta_box( 'sseo-metabox', 'SEO Einstellungen', 'render_metabox' );
 }
 
 add_action( 'add_meta_boxes', 'register_metabox' );
@@ -154,6 +162,7 @@ function render_metabox() {
 	<div id="sseo-meta-editor">
 		<p class="post-attributes-label-wrapper"><label class="post-attributes-label" for="sseo-title">Title</label><span id="sseo-title-info" class="length-info"></span></p>
 		<input type="text" name="sseo-title" id="sseo-title" value="<?php echo $sseo_title; ?>" />
+		<div class="sseo-settings-input-placeholders"><p>Platzhalter: <a class="sseo-input-placeholder" data-placeholder="{sitetitle}" data-target="sseo-title">Website-Titel</a><a class="sseo-input-placeholder" data-placeholder="{sitedesc}" data-target="sseo-title">Website-Beschreibung</a><a class="sseo-input-placeholder" data-placeholder="{pagetitle}" data-target="sseo-title">Seitentitel</a></p></div>
 		<input type="hidden" name="sseo-pageid" id="sseo-pageid" value="<?php echo $_GET['post']; ?>" />
 		<input type="hidden" name="sseo-title-default" id="sseo-title-default" value="<?php echo $sseo_title_default; ?>" />
 		<p class="post-attributes-label-wrapper"><label class="post-attributes-label" for="sseo-metadescription">Metadescription</label><span id="sseo-metadescription-info" class="length-info"></span></p>
