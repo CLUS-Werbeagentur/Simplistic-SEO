@@ -130,10 +130,10 @@ function settings_page() { ?>
 	<div class="wrap">
 		<h1>SEO Einstellungen</h1>
 		<form method="post" action="options.php">
+			<?php settings_fields( 'sseo_settings' );
+			do_settings_sections( 'sseo_settings' ); ?>
 			<div class="sseo-settings-wrapper">
 				<div class="sseo-settings-left">
-					<?php settings_fields( 'sseo_settings' ); ?>
-					<?php do_settings_sections( 'sseo_settings' ); ?>
 					<h2>Title</h2>
 					<div class="sseo-settings-input-wrapper">
 						<p><span class="sseo-settings-input-label">Nach diesem Muster wird der Titel generiert, wenn für eine Seite kein spezifischer Titel angeben ist.</span></p>
@@ -149,7 +149,13 @@ function settings_page() { ?>
 						</select>
 					</div>
 				</div>
-				<div class="sseo-settings-right"></div>
+				<div class="sseo-settings-right">
+					<h2>Sitemap XML</h2>
+					<div class="sseo-settings-input-wrapper">
+						<p><span class="sseo_activate_sitemap-label">Soll automatisch eine Sitemap.xml generiert werden?</span></p>
+						<input type="checkbox" id="sseo_activate_sitemap" name="sseo_activate_sitemap" value="1" <?php checked( 1, get_option( 'sseo_activate_sitemap' ), true ); ?> />
+					</div>
+				</div>
 				<div class="clear"></div>
 				<?php submit_button(); ?>
 			</div>
@@ -161,6 +167,7 @@ function settings_page() { ?>
 function register_settings() {
 	register_setting( 'sseo_settings', 'sseo_title_pattern' );
 	register_setting( 'sseo_settings', 'sseo_metadescription_field' );
+	register_setting( 'sseo_settings', 'sseo_activate_sitemap' );
 }
 
 add_action( 'admin_init', 'register_settings' );
@@ -224,5 +231,77 @@ function save_metabox($post_id) {
 }
 
 add_action( 'save_post', 'save_metabox' );
+
+
+// GENERATE SITEMAP
+//-----------------------------------------------------------------------
+
+function generateSitemap() {
+	if ( str_replace( '-', '', get_option( 'gmt_offset' ) ) < 10 ) {
+	    $tempo = '-0' . str_replace( '-', '', get_option( 'gmt_offset' ) );
+	} else {
+	    $tempo = get_option( 'gmt_offset' );
+	}
+	if( strlen( $tempo ) == 3 ) { $tempo = $tempo . ':00'; }
+	$postsForSitemap = get_posts( array(
+	    'numberposts' => -1,
+	    'orderby'     => 'modified',
+	    'post_type'   => 'any',
+	    'order'       => 'DESC'
+	) );
+	$sitemap .= '<?xml version="1.0" encoding="UTF-8"?>' . '<?xml-stylesheet type="text/xsl" href="' .
+	    esc_url( home_url( '/' ) ) . 'sitemap.xsl"?>';
+	$sitemap .= "\n" . '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+	$sitemap .= "\t" . '<url>' . "\n" .
+	    "\t\t" . '<loc>' . esc_url( home_url( '/' ) ) . '</loc>' .
+	    "\n\t\t" . '<lastmod>' . date( "Y-m-d\TH:i:s", current_time( 'timestamp', 0 ) ) . $tempo . '</lastmod>' .
+	    "\n\t" . '</url>' . "\n";
+	foreach( $postsForSitemap as $post ) {
+	    setup_postdata( $post);
+	    $postdate = explode( " ", $post->post_modified );
+	    $sitemap .= "\t" . '<url>' . "\n" .
+	        "\t\t" . '<loc>' . get_permalink( $post->ID ) . '</loc>' .
+	        "\n\t\t" . '<lastmod>' . $postdate[0] . 'T' . $postdate[1] . $tempo . '</lastmod>' .
+	        "\n\t" . '</url>' . "\n";
+	}
+	$sitemap .= '</urlset>';
+	$fp = fopen( ABSPATH . "sitemap.xml", 'w' );
+	fwrite( $fp, $sitemap );
+	fclose( $fp );
+}
+
+function deleteSitemap() {
+	if(file_exists(ABSPATH . "sitemap.xml")) {
+		unlink (ABSPATH . "sitemap.xml");
+	}
+}
+
+$option_name = 'sseo_activate_sitemap';
+
+add_action('added_option', function( $option_name, $option_value ) {
+
+	$sitemapactivated = esc_attr(get_option('sseo_metadescription_field'));
+
+	if($sitemapactivated) {
+		generateSitemap();
+	} else {
+		deleteSitemap();
+	}
+
+}, 10, 2);
+
+add_action('updated_option', function( $option_name, $old_value, $value ) {
+
+	$sitemapactivated = esc_attr(get_option('sseo_metadescription_field'));
+
+	if($sitemapactivated) {
+		generateSitemap();
+	} else {
+		deleteSitemap();
+	}
+
+}, 10, 2);
+
+add_action( 'save_post', 'generateSitemap' );
 
 ?>
