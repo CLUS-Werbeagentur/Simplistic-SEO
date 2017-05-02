@@ -237,6 +237,9 @@ add_action( 'save_post', 'save_metabox' );
 //-----------------------------------------------------------------------
 
 function generateSitemap() {
+
+	$sitemap = '';
+
 	if ( str_replace( '-', '', get_option( 'gmt_offset' ) ) < 10 ) {
 	    $tempo = '-0' . str_replace( '-', '', get_option( 'gmt_offset' ) );
 	} else {
@@ -249,8 +252,7 @@ function generateSitemap() {
 	    'post_type'   => 'any',
 	    'order'       => 'DESC'
 	) );
-	$sitemap .= '<?xml version="1.0" encoding="UTF-8"?>' . '<?xml-stylesheet type="text/xsl" href="' .
-	    esc_url( home_url( '/' ) ) . 'sitemap.xsl"?>';
+	$sitemap .= '<?xml version="1.0" encoding="UTF-8"?>' . '<?xml-stylesheet type="text/xsl" href="' . esc_url( home_url( '/' ) ) . 'sitemap.xsl"?>';
 	$sitemap .= "\n" . '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 	$sitemap .= "\t" . '<url>' . "\n" .
 	    "\t\t" . '<loc>' . esc_url( home_url( '/' ) ) . '</loc>' .
@@ -278,21 +280,9 @@ function deleteSitemap() {
 
 $option_name = 'sseo_activate_sitemap';
 
-add_action('added_option', function( $option_name, $option_value ) {
+add_action('added_option', function( $option_name ) {
 
-	$sitemapactivated = esc_attr(get_option('sseo_metadescription_field'));
-
-	if($sitemapactivated) {
-		generateSitemap();
-	} else {
-		deleteSitemap();
-	}
-
-}, 10, 2);
-
-add_action('updated_option', function( $option_name, $old_value, $value ) {
-
-	$sitemapactivated = esc_attr(get_option('sseo_metadescription_field'));
+	$sitemapactivated = esc_attr(get_option('sseo_activate_sitemap'));
 
 	if($sitemapactivated) {
 		generateSitemap();
