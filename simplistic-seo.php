@@ -9,6 +9,17 @@
 * License: GPL2
 */
 
+
+// LOAD LANGUAGE
+//-----------------------------------------------------------------------
+
+add_action('plugins_loaded', 'plugin_init');
+
+function plugin_init() {
+	load_plugin_textdomain( 'simplistic-seo', false, dirname(plugin_basename(__FILE__)).'/lang/' );
+}
+
+
 // AJAX ACTIONS
 //-----------------------------------------------------------------------
 
@@ -18,6 +29,7 @@ function ajax_generateTitle() {
 	echo generateTitle($_POST['string'], $_POST['pageid']);
 	exit();
 }
+
 
 // GENERATE TITLE & DESCRIPTION
 //-----------------------------------------------------------------------
@@ -39,32 +51,22 @@ function generateTitle($title, $pageid = NULL) {
 
 function generateMetadescription($postid) {
 
-	$field = esc_attr(get_option('sseo_metadescription_field'));
-
-	if($field == 'content'){
-		$content = get_post_field('post_content', $postid);
-	} elseif($field == 'acf'){
-
-		$field = get_field_objects($postid);
-
-		print_r($field);
-
-		$content = 'yo';
-	}
+	$content = get_post_field('post_content', $postid);
 
 	// Strip headings h1-h6
-	$content2 = preg_replace('/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6][^>]*>/', '', $content);
+	$content = preg_replace('/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6][^>]*>/', '', $content);
 	// Strip line breaks
-	$content3 = preg_replace('/\r|\n/', '', $content2);
+	$content = preg_replace('/\r|\n/', '', $content);
 	// Strip all remaining tags
-	$content4 = wp_strip_all_tags($content3);
+	$content = wp_strip_all_tags($content);
 	// Limit to 152 characters
-	$content5 = substr($content4, 0, 152);
+	$content = substr($content, 0, 152);
 	// Add "..." to the end of the string
-	$content5 .= '...';
+	$content .= '...';
 
-	return $content5;
+	return $content;
 }
+
 
 // ADD METATAGS TO THE HEAD
 //-----------------------------------------------------------------------
@@ -120,7 +122,7 @@ add_action( 'admin_enqueue_scripts', 'sseo_admin_assets' );
 //-----------------------------------------------------------------------
 
 function admin_menu() {
-	add_options_page('SEO Einstellungen', 'SEO Einstellungen', 'manage_options', 'seo_settings', 'settings_page');
+	add_options_page(__('SEO settings', 'simplistic-seo'), __('SEO settings', 'simplistic-seo'), 'manage_options', 'seo_settings', 'settings_page');
 }
 
 add_action( 'admin_menu', 'admin_menu' );
@@ -128,37 +130,43 @@ add_action( 'admin_menu', 'admin_menu' );
 function settings_page() { ?>
 
 	<div class="wrap">
-		<h1>SEO Einstellungen</h1>
+		<h1><?php _e('SEO settings', 'simplistic-seo'); ?></h1>
 		<form method="post" action="options.php">
 			<?php settings_fields( 'sseo_settings' );
 			do_settings_sections( 'sseo_settings' ); ?>
-			<div class="sseo-settings-wrapper">
-				<div class="sseo-settings-left">
-					<h2>Title</h2>
-					<div class="sseo-settings-input-wrapper">
-						<p><span class="sseo-settings-input-label">Nach diesem Muster wird der Titel generiert, wenn für eine Seite kein spezifischer Titel angeben ist.</span></p>
-						<input type="text" name="sseo_title_pattern" class="regular-text" id="sseo_title_pattern" value="<?php echo esc_attr(get_option('sseo_title_pattern')); ?>" />
-						<div class="sseo-settings-input-placeholders"><p>Platzhalter: <a class="sseo-input-placeholder" data-placeholder="{sitetitle}" data-target="sseo_title_pattern">Website-Titel</a><a class="sseo-input-placeholder" data-placeholder="{sitedesc}" data-target="sseo_title_pattern">Website-Beschreibung</a><a class="sseo-input-placeholder" data-placeholder="{pagetitle}" data-target="sseo_title_pattern">Seitentitel</a></p></div>
-					</div>
-					<h2>Metadescription</h2>
-					<div class="sseo-settings-input-wrapper">
-						<p><span class="sseo-settings-input-label">Ist für eine Seite keine spezifische Metadescription angegeben, kann aus dem hier ausgewählten Feld automatisch eine Metadescription generiert werden.</span>
-						<select name="sseo_metadescription_field" id="sseo_metadescription_field">
-							<option value="content" <?php selected(get_option('sseo_metadescription_field'), "content"); ?>>Inhalt</option>
-							<option value="acf" <?php selected(get_option('sseo_metadescription_field'), "acf"); ?>>ACF-Felder</option>
-						</select>
-					</div>
-				</div>
-				<div class="sseo-settings-right">
-					<h2>Sitemap XML</h2>
-					<div class="sseo-settings-input-wrapper">
-						<p><span class="sseo_activate_sitemap-label">Soll automatisch eine Sitemap.xml generiert werden?</span></p>
-						<input type="checkbox" id="sseo_activate_sitemap" name="sseo_activate_sitemap" value="1" <?php checked( 1, get_option( 'sseo_activate_sitemap' ), true ); ?> />
-					</div>
-				</div>
-				<div class="clear"></div>
-				<?php submit_button(); ?>
-			</div>
+
+			<table class="form-table">
+				<tbody>
+					<tr>
+						<th scope="row">
+							<label for="sseo_title_pattern"><?php _e('Title', 'simplistic-seo'); ?></label>
+						</th>
+						<td>
+							<input name="sseo_title_pattern" type="text" class="regular-text" id="sseo_title_pattern" value="<?php echo esc_attr(get_option('sseo_title_pattern')); ?>" />
+							<p class="description"><?php _e('The title will be generated following this pattern, if there is no other title specified for a post or page.', 'simplistic-seo'); ?></p>
+							<p class="description"><?php _e('Placeholder:', 'simplistic-seo'); ?> <a class="sseo-input-placeholder" data-placeholder="{sitetitle}" data-target="sseo_title_pattern"><?php _e('Sitetitle', 'simplistic-seo'); ?></a><a class="sseo-input-placeholder" data-placeholder="{sitedesc}" data-target="sseo_title_pattern"><?php _e('Sitedescription', 'simplistic-seo'); ?></a><a class="sseo-input-placeholder" data-placeholder="{pagetitle}" data-target="sseo_title_pattern"><?php _e('Pagetitle', 'simplistic-seo'); ?></a></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php _e('Sitemap XML', 'simplistic-seo'); ?></th>
+						<td>
+							<fieldset>
+								<legend class="screen-reader-text"><span><?php _e('Sitemap XML', 'simplistic-seo'); ?></span></legend>
+								<label for="sseo_activate_sitemap">
+									<input name="sseo_activate_sitemap" type="checkbox" id="sseo_activate_sitemap" value="1" <?php checked( 1, get_option( 'sseo_activate_sitemap' ), true ); ?> >
+									<?php _e('Generate sitemap.xml automatically', 'simplistic-seo'); ?>
+								</label>
+								<?php if(file_exists(ABSPATH . "sitemap.xml")) { ?>
+									<p><?php _e('Sitemap URL:', 'simplistic-seo'); ?> <a href="<?php echo bloginfo('url') . '/sitemap.xml'; ?>" target="_blank"><?php echo bloginfo('url') . '/sitemap.xml'; ?></a></p>
+								<?php } ?>
+							</fieldset>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<?php submit_button(); ?>
+
 		</form>
 	</div>
 
@@ -166,7 +174,6 @@ function settings_page() { ?>
 
 function register_settings() {
 	register_setting( 'sseo_settings', 'sseo_title_pattern' );
-	register_setting( 'sseo_settings', 'sseo_metadescription_field' );
 	register_setting( 'sseo_settings', 'sseo_activate_sitemap' );
 }
 
@@ -177,7 +184,14 @@ add_action( 'admin_init', 'register_settings' );
 //-----------------------------------------------------------------------
 
 function register_metabox() {
-	add_meta_box( 'sseo-metabox', 'SEO Einstellungen', 'render_metabox' );
+	// Get all custom post types
+	$post_types = get_post_types( array('_builtin' => false), 'names', 'and');
+	// Add standard post types
+	$posttypes_array = array('post', 'page');
+	foreach ($post_types  as $post_type ) {
+		$posttypes_array[] = $post_type;
+	}
+	add_meta_box( 'sseo-metabox', __('SEO settings', 'simplistic-seo'), 'render_metabox', $posttypes_array, 'normal', 'high' );
 }
 
 add_action( 'add_meta_boxes', 'register_metabox' );
@@ -194,17 +208,17 @@ function render_metabox() {
 	wp_nonce_field( 'my_meta_box_nonce', 'meta_box_nonce' ); ?>
 
 	<div id="sseo-meta-editor">
-		<p class="post-attributes-label-wrapper"><label class="post-attributes-label" for="sseo-title">Title</label><span id="sseo-title-info" class="length-info"></span></p>
+		<p class="post-attributes-label-wrapper"><label class="post-attributes-label" for="sseo-title"><?php _e('Title', 'simplistic-seo'); ?></label><span id="sseo-title-info" class="length-info"></span></p>
 		<input type="text" name="sseo-title" id="sseo-title" value="<?php echo $sseo_title; ?>" />
-		<div class="sseo-settings-input-placeholders"><p>Platzhalter: <a class="sseo-input-placeholder" data-placeholder="{sitetitle}" data-target="sseo-title">Website-Titel</a><a class="sseo-input-placeholder" data-placeholder="{sitedesc}" data-target="sseo-title">Website-Beschreibung</a><a class="sseo-input-placeholder" data-placeholder="{pagetitle}" data-target="sseo-title">Seitentitel</a></p></div>
+		<div class="sseo-settings-input-placeholders"><p><?php _e('Placeholder:', 'simplistic-seo'); ?> <a class="sseo-input-placeholder" data-placeholder="{sitetitle}" data-target="sseo-title"><?php _e('Sitetitle', 'simplistic-seo'); ?></a><a class="sseo-input-placeholder" data-placeholder="{sitedesc}" data-target="sseo-title"><?php _e('Sitedescription', 'simplistic-seo'); ?></a><a class="sseo-input-placeholder" data-placeholder="{pagetitle}" data-target="sseo-title"><?php _e('Pagetitle', 'simplistic-seo'); ?></a></p></div>
 		<input type="hidden" name="sseo-pageid" id="sseo-pageid" value="<?php echo $_GET['post']; ?>" />
 		<input type="hidden" name="sseo-title-default" id="sseo-title-default" value="<?php echo $sseo_title_default; ?>" />
-		<p class="post-attributes-label-wrapper"><label class="post-attributes-label" for="sseo-metadescription">Metadescription</label><span id="sseo-metadescription-info" class="length-info"></span></p>
+		<p class="post-attributes-label-wrapper"><label class="post-attributes-label" for="sseo-metadescription"><?php _e('Metadescription', 'simplistic-seo'); ?></label><span id="sseo-metadescription-info" class="length-info"></span></p>
 		<textarea name="sseo-metadescription" class="postbox" id="sseo-metadescription"><?php echo $sseo_metadescription; ?></textarea>
 		<input type="hidden" name="sseo-metadescription-default" id="sseo-metadescription-default" value="<?php echo $sseo_metadescription_default; ?>" />
 	</div>
 	<div id="sseo-preview">
-		<p class="post-attributes-label-wrapper post-attributes-label">Vorschau</p>
+		<p class="post-attributes-label-wrapper post-attributes-label"><?php _e('Preview', 'simplistic-seo'); ?></p>
 		<div id="sseo-google-preview-wrapper">
 			<span id="sseo-preview-title"><?php if(!empty($sseo_title)): echo generateTitle($sseo_title); else: echo $sseo_title_default; endif; ?></span>
 			<span id="sseo-preview-url"><?php the_permalink(); ?><span id="sseo-preview-url-arrow"></span></span>
@@ -233,7 +247,7 @@ function save_metabox($post_id) {
 add_action( 'save_post', 'save_metabox' );
 
 
-// GENERATE SITEMAP
+// SITEMAP
 //-----------------------------------------------------------------------
 
 function generateSitemap() {
@@ -284,6 +298,7 @@ add_action('added_option', function( $option_name ) {
 
 	$sitemapactivated = esc_attr(get_option('sseo_activate_sitemap'));
 
+	// Generate or delete sitemap, depending on settings
 	if($sitemapactivated) {
 		generateSitemap();
 	} else {

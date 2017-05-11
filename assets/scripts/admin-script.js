@@ -83,10 +83,9 @@ jQuery(document).ready(function() {
               data: { action: 'generate_title', string: currentVal, pageid: pageid }
             }).done(function(response) {
               jQuery('#sseo-preview-title').html(response);
-              console.log(response);
            });
 
-        }, 1000 );
+        }, 500 );
       };
 
       displayLength('#sseo-title', '#sseo-title-info', 45, 60);
