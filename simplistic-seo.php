@@ -1,8 +1,7 @@
 <?php
 /*
 * Plugin Name: Simplistic SEO
-* Plugin URI: http://walkeezy.ch
-* Description: All SEO you will ever need.
+* Description: Everything you need for basic SEO in one simple plugin.
 * Version: 1.0.0
 * Author: Kevin Walker
 * Author URI: http://walkeezy.ch
@@ -108,10 +107,10 @@ add_filter( 'wp_head', 'sseo_metadescription', 1 );
 
 function sseo_admin_assets() {
 	// CSS
-	wp_register_style( 'sseo_admin_css', plugin_dir_url( __FILE__ ) . 'dist/styles.min.css', false, '1.9' );
+	wp_register_style( 'sseo_admin_css', plugin_dir_url( __FILE__ ) . 'dist/styles.min.css', false, '1' );
 	wp_enqueue_style( 'sseo_admin_css' );
 	// JS
-	wp_register_script( 'sseo_admin_js', plugin_dir_url( __FILE__ ) . 'dist/functions.min.js', false, '1.6' );
+	wp_register_script( 'sseo_admin_js', plugin_dir_url( __FILE__ ) . 'dist/functions.min.js', false, '1' );
 	wp_enqueue_script( 'sseo_admin_js' );
 }
 
