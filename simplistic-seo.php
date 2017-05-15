@@ -12,9 +12,9 @@
 // LOAD LANGUAGE
 //-----------------------------------------------------------------------
 
-add_action('plugins_loaded', 'plugin_init');
+add_action('plugins_loaded', 'sseo_plugin_init');
 
-function plugin_init() {
+function sseo_plugin_init() {
 	load_plugin_textdomain( 'simplistic-seo', false, dirname(plugin_basename(__FILE__)).'/lang/' );
 }
 
@@ -22,10 +22,12 @@ function plugin_init() {
 // AJAX ACTIONS
 //-----------------------------------------------------------------------
 
-add_action('wp_ajax_generate_title', 'ajax_generateTitle');
+add_action('wp_ajax_generate_title', 'sseo_ajax_generate_title');
 
-function ajax_generateTitle() {
-	echo generateTitle($_POST['string'], $_POST['pageid']);
+function sseo_ajax_generate_title() {
+	$titlestring = sanitize_text_field($_POST['string']);
+	$titlepageid = sanitize_key(['pageid']);
+	echo sseo_generate_title($titlestring, $titlepageid);
 	exit();
 }
 
@@ -33,7 +35,7 @@ function ajax_generateTitle() {
 // GENERATE TITLE & DESCRIPTION
 //-----------------------------------------------------------------------
 
-function generateTitle($title, $pageid = NULL) {
+function sseo_generate_title($title, $pageid = NULL) {
 
 	$variables = array(
 		'sitetitle' => get_bloginfo('title'),
@@ -48,7 +50,7 @@ function generateTitle($title, $pageid = NULL) {
 	return $title;
 }
 
-function generateMetadescription($postid) {
+function sseo_generate_metadescription($postid) {
 
 	$content = get_post_field('post_content', $postid);
 
@@ -79,7 +81,7 @@ function sseo_title() {
 		if(empty($sseo_title_string)) {
 			$sseo_title_string = esc_attr(get_option('sseo_title_pattern'));
 		}
-		$sseo_title = generateTitle($sseo_title_string);
+		$sseo_title = sseo_generate_title($sseo_title_string);
 		return $sseo_title;
 	}
 }
@@ -93,9 +95,9 @@ function sseo_metadescription() {
 		$sseo_description = get_post_meta($post->ID, '_sseo_metadescription', true);
 		// If empty, get default meta description
 		if(empty($sseo_description)) {
-			$sseo_description = generateMetadescription($post->ID);
+			$sseo_description = sseo_generate_metadescription($post->ID);
 		}
-		echo '<meta type="description" content="'.$sseo_description.'"/>'."\n";
+		echo '<meta type="description" content="'.esc_attr($sseo_description).'"/>'."\n";
 	}
 }
 
@@ -105,7 +107,7 @@ add_filter( 'wp_head', 'sseo_metadescription', 1 );
 // ADD CSS TO THE ADMIN
 //-----------------------------------------------------------------------
 
-function sseo_admin_assets() {
+function sseo_adminassets() {
 	// CSS
 	wp_register_style( 'sseo_admin_css', plugin_dir_url( __FILE__ ) . 'dist/styles.min.css', false, '1' );
 	wp_enqueue_style( 'sseo_admin_css' );
@@ -114,19 +116,19 @@ function sseo_admin_assets() {
 	wp_enqueue_script( 'sseo_admin_js' );
 }
 
-add_action( 'admin_enqueue_scripts', 'sseo_admin_assets' );
+add_action( 'admin_enqueue_scripts', 'sseo_adminassets' );
 
 
 // SETTINGS PAGE
 //-----------------------------------------------------------------------
 
-function admin_menu() {
-	add_options_page(__('SEO settings', 'simplistic-seo'), __('SEO settings', 'simplistic-seo'), 'manage_options', 'seo_settings', 'settings_page');
+function sseo_adminmenu() {
+	add_options_page(__('SEO settings', 'simplistic-seo'), __('SEO settings', 'simplistic-seo'), 'manage_options', 'seo_settings', 'sseo_settingspage');
 }
 
-add_action( 'admin_menu', 'admin_menu' );
+add_action( 'admin_menu', 'sseo_adminmenu' );
 
-function settings_page() { ?>
+function sseo_settingspage() { ?>
 
 	<div class="wrap">
 		<h1><?php _e('SEO settings', 'simplistic-seo'); ?></h1>
@@ -156,7 +158,7 @@ function settings_page() { ?>
 									<?php _e('Generate sitemap.xml automatically', 'simplistic-seo'); ?>
 								</label>
 								<?php if(file_exists(ABSPATH . "sitemap.xml")) { ?>
-									<p><?php _e('Sitemap URL:', 'simplistic-seo'); ?> <a href="<?php echo bloginfo('url') . '/sitemap.xml'; ?>" target="_blank"><?php echo bloginfo('url') . '/sitemap.xml'; ?></a></p>
+									<p><?php _e('Sitemap URL:', 'simplistic-seo'); ?> <a href="<?php echo esc_url(bloginfo('url') . '/sitemap.xml'); ?>" target="_blank"><?php echo esc_url(bloginfo('url') . '/sitemap.xml'); ?></a></p>
 								<?php } ?>
 							</fieldset>
 						</td>
@@ -171,18 +173,18 @@ function settings_page() { ?>
 
 <?php }
 
-function register_settings() {
+function seo_register_settings() {
 	register_setting( 'sseo_settings', 'sseo_title_pattern' );
 	register_setting( 'sseo_settings', 'sseo_activate_sitemap' );
 }
 
-add_action( 'admin_init', 'register_settings' );
+add_action( 'admin_init', 'seo_register_settings' );
 
 
 // METABOX
 //-----------------------------------------------------------------------
 
-function register_metabox() {
+function sseo_register_metabox() {
 	// Get all custom post types
 	$post_types = get_post_types( array('_builtin' => false), 'names', 'and');
 	// Add standard post types
@@ -190,20 +192,20 @@ function register_metabox() {
 	foreach ($post_types  as $post_type ) {
 		$posttypes_array[] = $post_type;
 	}
-	add_meta_box( 'sseo-metabox', __('SEO settings', 'simplistic-seo'), 'render_metabox', $posttypes_array, 'normal', 'high' );
+	add_meta_box( 'sseo-metabox', __('SEO settings', 'simplistic-seo'), 'sseo_render_metabox', $posttypes_array, 'normal', 'high' );
 }
 
-add_action( 'add_meta_boxes', 'register_metabox' );
+add_action( 'add_meta_boxes', 'sseo_register_metabox' );
 
-function render_metabox() {
+function sseo_render_metabox() {
 
 	global $post;
   $values = get_post_custom( $post->ID );
 	$sseo_title = isset( $values['_sseo_title'] ) ? $values['_sseo_title'][0] : '';
 	$sseo_title_default_string = esc_attr(get_option('sseo_title_pattern'));
-	$sseo_title_default = generateTitle($sseo_title_default_string);
+	$sseo_title_default = sseo_generate_title($sseo_title_default_string);
 	$sseo_metadescription = isset( $values['_sseo_metadescription'] ) ? $values['_sseo_metadescription'][0] : '';
-	$sseo_metadescription_default = generateMetadescription($post->ID, 'content');
+	$sseo_metadescription_default = sseo_generate_metadescription($post->ID, 'content');
 	wp_nonce_field( 'my_meta_box_nonce', 'meta_box_nonce' ); ?>
 
 	<div id="sseo-meta-editor">
@@ -219,7 +221,7 @@ function render_metabox() {
 	<div id="sseo-preview">
 		<p class="post-attributes-label-wrapper post-attributes-label"><?php _e('Preview', 'simplistic-seo'); ?></p>
 		<div id="sseo-google-preview-wrapper">
-			<span id="sseo-preview-title"><?php if(!empty($sseo_title)): echo generateTitle($sseo_title); else: echo $sseo_title_default; endif; ?></span>
+			<span id="sseo-preview-title"><?php if(!empty($sseo_title)): echo sseo_generate_title($sseo_title); else: echo $sseo_title_default; endif; ?></span>
 			<span id="sseo-preview-url"><?php the_permalink(); ?><span id="sseo-preview-url-arrow"></span></span>
 			<span id="sseo-preview-metadescription"><?php if(!empty($sseo_metadescription)): echo $sseo_metadescription; else: echo $sseo_metadescription_default; endif; ?></span>
 		</div>
@@ -228,7 +230,7 @@ function render_metabox() {
 
 <?php }
 
-function save_metabox($post_id) {
+function sseo_save_metabox($post_id) {
 	// Bail if we're doing an auto save
   if( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) return;
   // if our nonce isn't there, or we can't verify it, bail
@@ -237,55 +239,56 @@ function save_metabox($post_id) {
   if( !current_user_can( 'edit_post' ) ) return;
 
 	if( isset( $_POST['sseo-title'] ) )
-		update_post_meta( $post_id, '_sseo_title', esc_attr( $_POST['sseo-title'] ) );
+		update_post_meta( $post_id, '_sseo_title', esc_html( $_POST['sseo-title'] ) );
 
   if( isset( $_POST['sseo-metadescription'] ) )
-		update_post_meta( $post_id, '_sseo_metadescription', esc_attr( $_POST['sseo-metadescription'] ) );
+		update_post_meta( $post_id, '_sseo_metadescription', esc_html( $_POST['sseo-metadescription'] ) );
 }
 
-add_action( 'save_post', 'save_metabox' );
+add_action( 'save_post', 'sseo_save_metabox' );
 
 
 // SITEMAP
 //-----------------------------------------------------------------------
 
-function generateSitemap() {
+function sseo_generate_sitemap() {
 
 	$sitemap = '';
 
 	if ( str_replace( '-', '', get_option( 'gmt_offset' ) ) < 10 ) {
-	    $tempo = '-0' . str_replace( '-', '', get_option( 'gmt_offset' ) );
+		$tempo = '-0' . str_replace( '-', '', get_option( 'gmt_offset' ) );
 	} else {
-	    $tempo = get_option( 'gmt_offset' );
+		$tempo = get_option( 'gmt_offset' );
 	}
-	if( strlen( $tempo ) == 3 ) { $tempo = $tempo . ':00'; }
-	$postsForSitemap = get_posts( array(
-	    'numberposts' => -1,
-	    'orderby'     => 'modified',
-	    'post_type'   => 'any',
-	    'order'       => 'DESC'
-	) );
+	
+	if( strlen( $tempo ) == 3 ) {
+		$tempo = $tempo . ':00';
+	}
+
+	$postsForSitemap = get_posts(array( 'numberposts' => -1, 'orderby' => 'modified', 'post_type' => 'any', 'order' => 'DESC' ));
 	$sitemap .= '<?xml version="1.0" encoding="UTF-8"?>' . '<?xml-stylesheet type="text/xsl" href="' . esc_url( home_url( '/' ) ) . 'sitemap.xsl"?>';
 	$sitemap .= "\n" . '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 	$sitemap .= "\t" . '<url>' . "\n" .
-	    "\t\t" . '<loc>' . esc_url( home_url( '/' ) ) . '</loc>' .
-	    "\n\t\t" . '<lastmod>' . date( "Y-m-d\TH:i:s", current_time( 'timestamp', 0 ) ) . $tempo . '</lastmod>' .
-	    "\n\t" . '</url>' . "\n";
+	"\t\t" . '<loc>' . esc_url( home_url( '/' ) ) . '</loc>' .
+	"\n\t\t" . '<lastmod>' . date( "Y-m-d\TH:i:s", current_time( 'timestamp', 0 ) ) . $tempo . '</lastmod>' .
+	"\n\t" . '</url>' . "\n";
+
 	foreach( $postsForSitemap as $post ) {
-	    setup_postdata( $post);
-	    $postdate = explode( " ", $post->post_modified );
-	    $sitemap .= "\t" . '<url>' . "\n" .
-	        "\t\t" . '<loc>' . get_permalink( $post->ID ) . '</loc>' .
-	        "\n\t\t" . '<lastmod>' . $postdate[0] . 'T' . $postdate[1] . $tempo . '</lastmod>' .
-	        "\n\t" . '</url>' . "\n";
+		setup_postdata( $post);
+		$postdate = explode( " ", $post->post_modified );
+		$sitemap .= "\t" . '<url>' . "\n" .
+		"\t\t" . '<loc>' . get_permalink( $post->ID ) . '</loc>' .
+		"\n\t\t" . '<lastmod>' . $postdate[0] . 'T' . $postdate[1] . $tempo . '</lastmod>' .
+		"\n\t" . '</url>' . "\n";
 	}
+
 	$sitemap .= '</urlset>';
 	$fp = fopen( ABSPATH . "sitemap.xml", 'w' );
 	fwrite( $fp, $sitemap );
 	fclose( $fp );
 }
 
-function deleteSitemap() {
+function sseo_delete_sitemap() {
 	if(file_exists(ABSPATH . "sitemap.xml")) {
 		unlink (ABSPATH . "sitemap.xml");
 	}
@@ -299,13 +302,13 @@ add_action('added_option', function( $option_name ) {
 
 	// Generate or delete sitemap, depending on settings
 	if($sitemapactivated) {
-		generateSitemap();
+		sseo_generate_sitemap();
 	} else {
-		deleteSitemap();
+		sseo_delete_sitemap();
 	}
 
 }, 10, 2);
 
-add_action( 'save_post', 'generateSitemap' );
+add_action( 'save_post', 'sseo_generate_sitemap' );
 
 ?>
