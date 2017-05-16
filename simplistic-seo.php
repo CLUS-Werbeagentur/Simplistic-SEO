@@ -2,7 +2,7 @@
 /*
 * Plugin Name: Simplistic SEO
 * Description: Everything you need for basic SEO in one simple plugin.
-* Version: 1.0.0
+* Version: 1.1
 * Author: Kevin Walker
 * Author URI: http://walkeezy.ch
 * License: GPL2
@@ -60,12 +60,17 @@ function sseo_generate_metadescription($postid) {
 	$content = preg_replace('/\r|\n/', '', $content);
 	// Strip all remaining tags
 	$content = wp_strip_all_tags($content);
-	// Limit to 152 characters
-	$content = substr($content, 0, 152);
-	// Add "..." to the end of the string
-	$content .= '...';
+	// Check if there is a description...
+	if(empty($content)){
+		return '';
+	} else {
+		// Limit to 152 characters
+		$content = substr($content, 0, 152);
+		// Add "..." to the end of the string
+		$content .= '...';
 
-	return $content;
+		return $content;
+	}
 }
 
 
@@ -79,7 +84,7 @@ function sseo_title() {
 		$sseo_title_string = get_post_meta($post->ID, '_sseo_title', true);
 		// If empty, get default title pattern
 		if(empty($sseo_title_string)) {
-			$sseo_title_string = esc_attr(get_option('sseo_title_pattern'));
+			$sseo_title_string = esc_attr(get_option('sseo_title_pattern', '{pagetitle} – {sitetitle}'));
 		}
 		$sseo_title = sseo_generate_title($sseo_title_string);
 		return $sseo_title;
@@ -97,7 +102,9 @@ function sseo_metadescription() {
 		if(empty($sseo_description)) {
 			$sseo_description = sseo_generate_metadescription($post->ID);
 		}
-		echo '<meta type="description" content="'.esc_attr($sseo_description).'"/>'."\n";
+		if(!empty($sseo_description)){
+			echo '<meta type="description" content="'.esc_attr($sseo_description).'"/>'."\n";
+		}
 	}
 }
 
@@ -143,7 +150,7 @@ function sseo_settingspage() { ?>
 							<label for="sseo_title_pattern"><?php _e('Title', 'simplistic-seo'); ?></label>
 						</th>
 						<td>
-							<input name="sseo_title_pattern" type="text" class="regular-text" id="sseo_title_pattern" value="<?php echo esc_attr(get_option('sseo_title_pattern')); ?>" />
+							<input name="sseo_title_pattern" type="text" class="regular-text" id="sseo_title_pattern" value="<?php echo esc_attr(get_option('sseo_title_pattern', '{pagetitle} – {sitetitle}')); ?>" />
 							<p class="description"><?php _e('The title will be generated following this pattern, if there is no other title specified for a post or page.', 'simplistic-seo'); ?></p>
 							<p class="description"><?php _e('Placeholder:', 'simplistic-seo'); ?> <a class="sseo-input-placeholder" data-placeholder="{sitetitle}" data-target="sseo_title_pattern"><?php _e('Sitetitle', 'simplistic-seo'); ?></a><a class="sseo-input-placeholder" data-placeholder="{sitedesc}" data-target="sseo_title_pattern"><?php _e('Sitedescription', 'simplistic-seo'); ?></a><a class="sseo-input-placeholder" data-placeholder="{pagetitle}" data-target="sseo_title_pattern"><?php _e('Pagetitle', 'simplistic-seo'); ?></a></p>
 						</td>
@@ -202,7 +209,7 @@ function sseo_render_metabox() {
 	global $post;
   $values = get_post_custom( $post->ID );
 	$sseo_title = isset( $values['_sseo_title'] ) ? $values['_sseo_title'][0] : '';
-	$sseo_title_default_string = esc_attr(get_option('sseo_title_pattern'));
+	$sseo_title_default_string = esc_attr(get_option('sseo_title_pattern', '{pagetitle} – {sitetitle}'));
 	$sseo_title_default = sseo_generate_title($sseo_title_default_string);
 	$sseo_metadescription = isset( $values['_sseo_metadescription'] ) ? $values['_sseo_metadescription'][0] : '';
 	$sseo_metadescription_default = sseo_generate_metadescription($post->ID, 'content');
@@ -260,7 +267,7 @@ function sseo_generate_sitemap() {
 	} else {
 		$tempo = get_option( 'gmt_offset' );
 	}
-	
+
 	if( strlen( $tempo ) == 3 ) {
 		$tempo = $tempo . ':00';
 	}
@@ -309,6 +316,17 @@ add_action('added_option', function( $option_name ) {
 
 }, 10, 2);
 
-add_action( 'save_post', 'sseo_generate_sitemap' );
+add_action( 'save_post', function() {
+
+	$sitemapactivated = esc_attr(get_option('sseo_activate_sitemap'));
+
+	// Generate or delete sitemap, depending on settings
+	if($sitemapactivated) {
+		sseo_generate_sitemap();
+	} else {
+		sseo_delete_sitemap();
+	}
+
+} );
 
 ?>
