@@ -2,7 +2,7 @@
 /*
 * Plugin Name: Simplistic SEO
 * Description: Everything you need for basic SEO in one simple plugin.
-* Version: 1.1
+* Version: 1.2
 * Author: Kevin Walker
 * Author URI: http://walkeezy.ch
 * License: GPL2
@@ -103,7 +103,7 @@ function sseo_metadescription() {
 			$sseo_description = sseo_generate_metadescription($post->ID);
 		}
 		if(!empty($sseo_description)){
-			echo '<meta type="description" content="'.esc_attr($sseo_description).'"/>'."\n";
+			echo '<meta name="description" content="'.esc_attr($sseo_description).'"/>'."\n";
 		}
 	}
 }

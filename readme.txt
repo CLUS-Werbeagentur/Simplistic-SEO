@@ -5,7 +5,7 @@ Plugin URI: https://github.com/Walkeezy/Simplistic-SEO
 Tags: seo, search engine, metatags, titletag, metadescription, sitemap xml, sitemap.xml
 Requires at least: 4.4
 Tested up to: 4.7.4
-Stable tag: 1.1
+Stable tag: 1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,6 +20,7 @@ If you don't want to set a title and description for every single post or page, 
 On top of that, there is an option to automatically generate the XML sitemap for your whole WordPress site.
 
 Full features list:
+
 * Edit post title tags and meta descriptions
 * Automatically generate title tags based on your template
 * Automatically generate meta descriptions from the content
@@ -27,8 +28,15 @@ Full features list:
 * Automatically generated XML sitemap
 
 Plugin translations:
+
 * English
 * German
+
+Planed for future releases:
+
+* Ability to create different title and meta description templates for all post types
+* Ability to choose which post types to include in the XML sitemap
+* Support for Custom Fields (including those from the Advanced Custom Fields plugin) to generate meta descriptions from
 
 == Installation ==
 
@@ -43,7 +51,14 @@ Plugin translations:
 
 == Changelog ==
 
+= 1.2 =
+*Release date: 2017-05-29*
+
+* Fixed an important bug with the meta description tag.
+
 = 1.1 =
+*Release date: 2017-05-16*
+
 * If the content of a page or post is empty, the meta description tag will no longer be added to the html of your page.
 * A default pattern for the title setting has been added.
 * Fixed a bug where the sitemap.xml has been generated every time a post has been saved, even if the sitemap has been disabled in the settings.
