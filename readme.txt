@@ -2,10 +2,10 @@
 Contributors: walkeezy
 Donate link: https://www.paypal.me/walkeezy
 Plugin URI: https://github.com/Walkeezy/Simplistic-SEO
-Tags: seo, search engine, metatags, titletag, metadescription, sitemap xml, sitemap.xml
+Tags: seo, search engine, metatags, titletag, metadescription, sitemap xml, sitemap.xml, google
 Requires at least: 4.4
-Tested up to: 4.7.4
-Stable tag: 1.2
+Tested up to: 4.7.5
+Stable tag: 1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,6 +50,12 @@ Planed for future releases:
 1. Optimize title tag and meta description directly from the post screen. On the right you will see how your website will look like in Googles search results.
 
 == Changelog ==
+
+= 1.3 =
+*Release date: 2017-05-31*
+
+* Reduced the priority of the SEO metabox on the post screen to 'low'.
+* Fixed a bug with placeholders in the preview of the title tag.
 
 = 1.2 =
 *Release date: 2017-05-29*

@@ -2,9 +2,11 @@
 /*
 * Plugin Name: Simplistic SEO
 * Description: Everything you need for basic SEO in one simple plugin.
-* Version: 1.2
+* Version: 1.3
 * Author: Kevin Walker
 * Author URI: http://walkeezy.ch
+* Text Domain: simplistic-seo
+* Domain Path: /lang
 * License: GPL2
 */
 
@@ -26,7 +28,7 @@ add_action('wp_ajax_generate_title', 'sseo_ajax_generate_title');
 
 function sseo_ajax_generate_title() {
 	$titlestring = sanitize_text_field($_POST['string']);
-	$titlepageid = sanitize_key(['pageid']);
+	$titlepageid = sanitize_key($_POST['pageid']);
 	echo sseo_generate_title($titlestring, $titlepageid);
 	exit();
 }
@@ -199,7 +201,7 @@ function sseo_register_metabox() {
 	foreach ($post_types  as $post_type ) {
 		$posttypes_array[] = $post_type;
 	}
-	add_meta_box( 'sseo-metabox', __('SEO settings', 'simplistic-seo'), 'sseo_render_metabox', $posttypes_array, 'normal', 'high' );
+	add_meta_box( 'sseo-metabox', __('SEO settings', 'simplistic-seo'), 'sseo_render_metabox', $posttypes_array, 'normal', 'low' );
 }
 
 add_action( 'add_meta_boxes', 'sseo_register_metabox' );
