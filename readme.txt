@@ -4,7 +4,7 @@ Donate link: https://www.paypal.me/walkeezy
 Plugin URI: https://github.com/Walkeezy/Simplistic-SEO
 Tags: seo, search engine, metatags, titletag, metadescription, sitemap xml, sitemap.xml, google
 Requires at least: 4.4
-Tested up to: 4.7.5
+Tested up to: 4.8
 Stable tag: 1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
