@@ -2,7 +2,7 @@
 /*
 * Plugin Name: Simplistic SEO
 * Description: Everything you need for basic SEO in one simple plugin.
-* Version: 1.3
+* Version: 1.4
 * Author: Kevin Walker
 * Author URI: http://walkeezy.ch
 * Text Domain: simplistic-seo
@@ -95,6 +95,18 @@ function sseo_title() {
 
 add_filter('pre_get_document_title', 'sseo_title', 10, 1);
 
+function sseo_twitter() {
+  echo '<meta name="twitter:card" content="summary"/>'."\n";
+  $sseo_twittertitle = sseo_title();
+  if(!empty($sseo_twittertitle)){
+    echo '<meta name="twitter:title" content="'.esc_attr($sseo_twittertitle).'"/>'."\n";
+  }
+}
+
+if(esc_attr(get_option('sseo_activate_twittercard'))){
+  add_filter( 'wp_head', 'sseo_twitter', 1 );
+}
+
 function sseo_metadescription() {
 	global $post;
 	if($post){
@@ -105,7 +117,10 @@ function sseo_metadescription() {
 			$sseo_description = sseo_generate_metadescription($post->ID);
 		}
 		if(!empty($sseo_description)){
-			echo '<meta name="description" content="'.esc_attr($sseo_description).'"/>'."\n";
+      echo '<meta name="description" content="'.esc_attr($sseo_description).'"/>'."\n";
+      if(esc_attr(get_option('sseo_activate_twittercard'))){
+        echo '<meta name="twitter:description" content="'.esc_attr($sseo_description).'"/>'."\n";
+      }
 		}
 	}
 }
@@ -172,6 +187,18 @@ function sseo_settingspage() { ?>
 							</fieldset>
 						</td>
 					</tr>
+					<tr>
+						<th scope="row"><?php _e('Twitter cards', 'simplistic-seo'); ?></th>
+						<td>
+							<fieldset>
+								<legend class="screen-reader-text"><span><?php _e('Twitter cards', 'simplistic-seo'); ?></span></legend>
+								<label for="sseo_activate_twittercard">
+									<input name="sseo_activate_twittercard" type="checkbox" id="sseo_activate_twittercard" value="1" <?php checked( 1, get_option( 'sseo_activate_twittercard' ), true ); ?> >
+									<?php _e('Enable Twitter cards', 'simplistic-seo'); ?>
+								</label>
+							</fieldset>
+						</td>
+					</tr>
 				</tbody>
 			</table>
 
@@ -184,7 +211,8 @@ function sseo_settingspage() { ?>
 
 function seo_register_settings() {
 	register_setting( 'sseo_settings', 'sseo_title_pattern' );
-	register_setting( 'sseo_settings', 'sseo_activate_sitemap' );
+  register_setting( 'sseo_settings', 'sseo_activate_sitemap' );
+  register_setting( 'sseo_settings', 'sseo_activate_twittercard' );
 }
 
 add_action( 'admin_init', 'seo_register_settings' );

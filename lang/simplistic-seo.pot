@@ -1,94 +1,89 @@
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: Simplistic SEO Plugin\n"
+"Project-Id-Version: Simplistic SEO\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-08-07 09:09+0000\n"
-"PO-Revision-Date: 2018-08-07 09:10+0000\n"
-"Last-Translator: clus <web@clus.ch>\n"
-"Language-Team: Deutsch (Schweiz)\n"
-"Language: de_CH\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Loco https://localise.biz/\n"
-"X-Loco-Source-Locale: en\n"
-"X-Loco-Project-Id: 22888\n"
-"X-Loco-Api-Version: 1.0.17 20170511-1"
+"X-Generator: Loco https://localise.biz/"
 
 #: simplistic-seo.php:197
 msgid "Enable Twitter cards"
-msgstr "Twitter Cards aktivieren"
+msgstr ""
 
 #. Description of the plugin
 msgid "Everything you need for basic SEO in one simple plugin."
-msgstr "Alles was man für SEO in einem einfachen Plugin."
+msgstr ""
 
 #: simplistic-seo.php:182
 msgid "Generate sitemap.xml automatically"
-msgstr "Sitemap.xml automatisch generieren"
+msgstr ""
 
-#. URI of the plugin
 #. Author URI of the plugin
 msgid "http://walkeezy.ch"
-msgstr "http://walkeezy.ch"
+msgstr ""
 
 #. Author of the plugin
 msgid "Kevin Walker"
-msgstr "Kevin Walker"
+msgstr ""
 
 #: simplistic-seo.php:254
 msgid "Metadescription"
-msgstr "Meta-Beschreibung"
+msgstr ""
 
 #: simplistic-seo.php:172 simplistic-seo.php:251
 msgid "Pagetitle"
-msgstr "Seitentitel"
+msgstr ""
 
 #: simplistic-seo.php:172 simplistic-seo.php:251
 msgid "Placeholder:"
-msgstr "Platzhalter:"
+msgstr ""
 
 #: simplistic-seo.php:259
 msgid "Preview"
-msgstr "Vorschau"
+msgstr ""
 
 #: simplistic-seo.php:150 simplistic-seo.php:158 simplistic-seo.php:232
 msgid "SEO settings"
-msgstr "SEO Einstellungen"
+msgstr ""
 
 #. Name of the plugin
 msgid "Simplistic SEO"
-msgstr "Simplistic SEO"
+msgstr ""
 
 #: simplistic-seo.php:172 simplistic-seo.php:251
 msgid "Sitedescription"
-msgstr "Website-Beschreibung"
+msgstr ""
 
 #: simplistic-seo.php:185
 msgid "Sitemap URL:"
-msgstr "Sitemap URL:"
+msgstr ""
 
 #: simplistic-seo.php:176 simplistic-seo.php:179
 msgid "Sitemap XML"
-msgstr "Sitemap XML"
+msgstr ""
 
 #: simplistic-seo.php:172 simplistic-seo.php:251
 msgid "Sitetitle"
-msgstr "Website-Titel"
+msgstr ""
 
 #: simplistic-seo.php:171
 msgid ""
 "The title will be generated following this pattern, if there is no other "
 "title specified for a post or page."
 msgstr ""
-"Der Title-Tag wird nach diesem Muster generiert, falls für die spezifische "
-"Seite kein anderer Titel definiert ist."
 
 #: simplistic-seo.php:167 simplistic-seo.php:249
 msgid "Title"
-msgstr "Titel"
+msgstr ""
 
 #: simplistic-seo.php:191 simplistic-seo.php:194
 msgid "Twitter cards"
-msgstr "Twitter Cards"
+msgstr ""
