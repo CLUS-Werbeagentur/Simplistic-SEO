@@ -2,8 +2,8 @@
 /*
 * Plugin Name: Simplistic SEO
 * Description: Everything you need for basic SEO in one simple plugin.
-* Version: 1.4
-* Author: Kevin Walker
+* Version: 1.5
+* Author: Kevin Walker, Roman Peterhans
 * Author URI: http://walkeezy.ch
 * Text Domain: simplistic-seo
 * Domain Path: /lang
@@ -154,58 +154,73 @@ add_action( 'admin_menu', 'sseo_adminmenu' );
 
 function sseo_settingspage() { ?>
 
-	<div class="wrap">
-		<h1><?php _e('SEO settings', 'simplistic-seo'); ?></h1>
-		<form method="post" action="options.php">
-			<?php settings_fields( 'sseo_settings' );
+<div class="wrap">
+    <h1><?php _e('SEO settings', 'simplistic-seo'); ?></h1>
+    <form method="post" action="options.php">
+        <?php settings_fields( 'sseo_settings' );
 			do_settings_sections( 'sseo_settings' ); ?>
 
-			<table class="form-table">
-				<tbody>
-					<tr>
-						<th scope="row">
-							<label for="sseo_title_pattern"><?php _e('Title', 'simplistic-seo'); ?></label>
-						</th>
-						<td>
-							<input name="sseo_title_pattern" type="text" class="regular-text" id="sseo_title_pattern" value="<?php echo esc_attr(get_option('sseo_title_pattern', '{pagetitle} – {sitetitle}')); ?>" />
-							<p class="description"><?php _e('The title will be generated following this pattern, if there is no other title specified for a post or page.', 'simplistic-seo'); ?></p>
-							<p class="description"><?php _e('Placeholder:', 'simplistic-seo'); ?> <a class="sseo-input-placeholder" data-placeholder="{sitetitle}" data-target="sseo_title_pattern"><?php _e('Sitetitle', 'simplistic-seo'); ?></a><a class="sseo-input-placeholder" data-placeholder="{sitedesc}" data-target="sseo_title_pattern"><?php _e('Sitedescription', 'simplistic-seo'); ?></a><a class="sseo-input-placeholder" data-placeholder="{pagetitle}" data-target="sseo_title_pattern"><?php _e('Pagetitle', 'simplistic-seo'); ?></a></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php _e('Sitemap XML', 'simplistic-seo'); ?></th>
-						<td>
-							<fieldset>
-								<legend class="screen-reader-text"><span><?php _e('Sitemap XML', 'simplistic-seo'); ?></span></legend>
-								<label for="sseo_activate_sitemap">
-									<input name="sseo_activate_sitemap" type="checkbox" id="sseo_activate_sitemap" value="1" <?php checked( 1, get_option( 'sseo_activate_sitemap' ), true ); ?> >
-									<?php _e('Generate sitemap.xml automatically', 'simplistic-seo'); ?>
-								</label>
-								<?php if(file_exists(ABSPATH . "sitemap.xml")) { ?>
-									<p><?php _e('Sitemap URL:', 'simplistic-seo'); ?> <a href="<?php echo esc_url(bloginfo('url') . '/sitemap.xml'); ?>" target="_blank"><?php echo esc_url(bloginfo('url') . '/sitemap.xml'); ?></a></p>
-								<?php } ?>
-							</fieldset>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><?php _e('Twitter cards', 'simplistic-seo'); ?></th>
-						<td>
-							<fieldset>
-								<legend class="screen-reader-text"><span><?php _e('Twitter cards', 'simplistic-seo'); ?></span></legend>
-								<label for="sseo_activate_twittercard">
-									<input name="sseo_activate_twittercard" type="checkbox" id="sseo_activate_twittercard" value="1" <?php checked( 1, get_option( 'sseo_activate_twittercard' ), true ); ?> >
-									<?php _e('Enable Twitter cards', 'simplistic-seo'); ?>
-								</label>
-							</fieldset>
-						</td>
-					</tr>
-				</tbody>
-			</table>
+        <table class="form-table">
+            <tbody>
+                <tr>
+                    <th scope="row">
+                        <label for="sseo_title_pattern"><?php _e('Title', 'simplistic-seo'); ?></label>
+                    </th>
+                    <td>
+                        <input name="sseo_title_pattern" type="text" class="regular-text" id="sseo_title_pattern"
+                            value="<?php echo esc_attr(get_option('sseo_title_pattern', '{pagetitle} – {sitetitle}')); ?>" />
+                        <p class="description">
+                            <?php _e('The title will be generated following this pattern, if there is no other title specified for a post or page.', 'simplistic-seo'); ?>
+                        </p>
+                        <p class="description"><?php _e('Placeholder:', 'simplistic-seo'); ?> <a
+                                class="sseo-input-placeholder" data-placeholder="{sitetitle}"
+                                data-target="sseo_title_pattern"><?php _e('Sitetitle', 'simplistic-seo'); ?></a><a
+                                class="sseo-input-placeholder" data-placeholder="{sitedesc}"
+                                data-target="sseo_title_pattern"><?php _e('Sitedescription', 'simplistic-seo'); ?></a><a
+                                class="sseo-input-placeholder" data-placeholder="{pagetitle}"
+                                data-target="sseo_title_pattern"><?php _e('Pagetitle', 'simplistic-seo'); ?></a></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><?php _e('Sitemap XML', 'simplistic-seo'); ?></th>
+                    <td>
+                        <fieldset>
+                            <legend class="screen-reader-text">
+                                <span><?php _e('Sitemap XML', 'simplistic-seo'); ?></span></legend>
+                            <label for="sseo_activate_sitemap">
+                                <input name="sseo_activate_sitemap" type="checkbox" id="sseo_activate_sitemap" value="1"
+                                    <?php checked( 1, get_option( 'sseo_activate_sitemap' ), true ); ?>>
+                                <?php _e('Generate sitemap.xml automatically', 'simplistic-seo'); ?>
+                            </label>
+                            <?php if(file_exists(ABSPATH . "sitemap.xml")) { ?>
+                            <p><?php _e('Sitemap URL:', 'simplistic-seo'); ?> <a
+                                    href="<?php echo esc_url(bloginfo('url') . '/sitemap.xml'); ?>"
+                                    target="_blank"><?php echo esc_url(bloginfo('url') . '/sitemap.xml'); ?></a></p>
+                            <?php } ?>
+                        </fieldset>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><?php _e('Twitter cards', 'simplistic-seo'); ?></th>
+                    <td>
+                        <fieldset>
+                            <legend class="screen-reader-text">
+                                <span><?php _e('Twitter cards', 'simplistic-seo'); ?></span></legend>
+                            <label for="sseo_activate_twittercard">
+                                <input name="sseo_activate_twittercard" type="checkbox" id="sseo_activate_twittercard"
+                                    value="1" <?php checked( 1, get_option( 'sseo_activate_twittercard' ), true ); ?>>
+                                <?php _e('Enable Twitter cards', 'simplistic-seo'); ?>
+                            </label>
+                        </fieldset>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
 
-			<?php submit_button(); ?>
+        <?php submit_button(); ?>
 
-		</form>
-	</div>
+    </form>
+</div>
 
 <?php }
 
@@ -245,25 +260,41 @@ function sseo_render_metabox() {
 	$sseo_metadescription_default = sseo_generate_metadescription($post->ID, 'content');
 	wp_nonce_field( 'my_meta_box_nonce', 'meta_box_nonce' ); ?>
 
-	<div id="sseo-meta-editor">
-		<p class="post-attributes-label-wrapper"><label class="post-attributes-label" for="sseo-title"><?php _e('Title', 'simplistic-seo'); ?></label><span id="sseo-title-info" class="length-info"></span></p>
-		<input type="text" name="sseo-title" id="sseo-title" value="<?php echo $sseo_title; ?>" />
-		<div class="sseo-settings-input-placeholders"><p><?php _e('Placeholder:', 'simplistic-seo'); ?> <a class="sseo-input-placeholder" data-placeholder="{sitetitle}" data-target="sseo-title"><?php _e('Sitetitle', 'simplistic-seo'); ?></a><a class="sseo-input-placeholder" data-placeholder="{sitedesc}" data-target="sseo-title"><?php _e('Sitedescription', 'simplistic-seo'); ?></a><a class="sseo-input-placeholder" data-placeholder="{pagetitle}" data-target="sseo-title"><?php _e('Pagetitle', 'simplistic-seo'); ?></a></p></div>
-		<input type="hidden" name="sseo-pageid" id="sseo-pageid" value="<?php echo $_GET['post']; ?>" />
-		<input type="hidden" name="sseo-title-default" id="sseo-title-default" value="<?php echo $sseo_title_default; ?>" />
-		<p class="post-attributes-label-wrapper"><label class="post-attributes-label" for="sseo-metadescription"><?php _e('Metadescription', 'simplistic-seo'); ?></label><span id="sseo-metadescription-info" class="length-info"></span></p>
-		<textarea name="sseo-metadescription" class="postbox" id="sseo-metadescription"><?php echo $sseo_metadescription; ?></textarea>
-		<input type="hidden" name="sseo-metadescription-default" id="sseo-metadescription-default" value="<?php echo $sseo_metadescription_default; ?>" />
-	</div>
-	<div id="sseo-preview">
-		<p class="post-attributes-label-wrapper post-attributes-label"><?php _e('Preview', 'simplistic-seo'); ?></p>
-		<div id="sseo-google-preview-wrapper">
-			<span id="sseo-preview-title"><?php if(!empty($sseo_title)): echo sseo_generate_title($sseo_title); else: echo $sseo_title_default; endif; ?></span>
-			<span id="sseo-preview-url"><?php the_permalink(); ?><span id="sseo-preview-url-arrow"></span></span>
-			<span id="sseo-preview-metadescription"><?php if(!empty($sseo_metadescription)): echo $sseo_metadescription; else: echo $sseo_metadescription_default; endif; ?></span>
-		</div>
-	</div>
-	<div class="clear"></div>
+<div id="sseo-meta-editor">
+    <p class="post-attributes-label-wrapper"><label class="post-attributes-label"
+            for="sseo-title"><?php _e('Title', 'simplistic-seo'); ?></label><span id="sseo-title-info"
+            class="length-info"></span></p>
+    <input type="text" name="sseo-title" id="sseo-title" value="<?php echo $sseo_title; ?>" />
+    <div class="sseo-settings-input-placeholders">
+        <p><?php _e('Placeholder:', 'simplistic-seo'); ?> <a class="sseo-input-placeholder"
+                data-placeholder="{sitetitle}"
+                data-target="sseo-title"><?php _e('Sitetitle', 'simplistic-seo'); ?></a><a
+                class="sseo-input-placeholder" data-placeholder="{sitedesc}"
+                data-target="sseo-title"><?php _e('Sitedescription', 'simplistic-seo'); ?></a><a
+                class="sseo-input-placeholder" data-placeholder="{pagetitle}"
+                data-target="sseo-title"><?php _e('Pagetitle', 'simplistic-seo'); ?></a></p>
+    </div>
+    <input type="hidden" name="sseo-pageid" id="sseo-pageid" value="<?php echo $_GET['post']; ?>" />
+    <input type="hidden" name="sseo-title-default" id="sseo-title-default" value="<?php echo $sseo_title_default; ?>" />
+    <p class="post-attributes-label-wrapper"><label class="post-attributes-label"
+            for="sseo-metadescription"><?php _e('Metadescription', 'simplistic-seo'); ?></label><span
+            id="sseo-metadescription-info" class="length-info"></span></p>
+    <textarea name="sseo-metadescription" class="postbox"
+        id="sseo-metadescription"><?php echo $sseo_metadescription; ?></textarea>
+    <input type="hidden" name="sseo-metadescription-default" id="sseo-metadescription-default"
+        value="<?php echo $sseo_metadescription_default; ?>" />
+</div>
+<div id="sseo-preview">
+    <p class="post-attributes-label-wrapper post-attributes-label"><?php _e('Preview', 'simplistic-seo'); ?></p>
+    <div id="sseo-google-preview-wrapper">
+        <span
+            id="sseo-preview-title"><?php if(!empty($sseo_title)): echo sseo_generate_title($sseo_title); else: echo $sseo_title_default; endif; ?></span>
+        <span id="sseo-preview-url"><?php the_permalink(); ?><span id="sseo-preview-url-arrow"></span></span>
+        <span
+            id="sseo-preview-metadescription"><?php if(!empty($sseo_metadescription)): echo $sseo_metadescription; else: echo $sseo_metadescription_default; endif; ?></span>
+    </div>
+</div>
+<div class="clear"></div>
 
 <?php }
 
@@ -303,59 +334,61 @@ function sseo_generate_sitemap() {
 	}
 
 	$postsForSitemap = get_posts(array( 'numberposts' => -1, 'orderby' => 'modified', 'post_type' => 'any', 'order' => 'DESC' ));
-	$sitemap .= '<?xml version="1.0" encoding="UTF-8"?>' . '<?xml-stylesheet type="text/xsl" href="' . esc_url( home_url( '/' ) ) . 'sitemap.xsl"?>';
-	$sitemap .= "\n" . '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
-	$sitemap .= "\t" . '<url>' . "\n" .
-	"\t\t" . '<loc>' . esc_url( home_url( '/' ) ) . '</loc>' .
-	"\n\t\t" . '<lastmod>' . date( "Y-m-d\TH:i:s", current_time( 'timestamp', 0 ) ) . $tempo . '</lastmod>' .
-	"\n\t" . '</url>' . "\n";
+	$sitemap .= '<?xml version="1.0" encoding="UTF-8"?>' . '
+<?xml-stylesheet type="text/xsl" href="' . esc_url( home_url( '/' ) ) . 'sitemap.xsl"?>';
+$sitemap .= "\n" . '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
+    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    $sitemap .= "\t" . '<url>' . "\n" .
+        "\t\t" . '<loc>' . esc_url( home_url( '/' ) ) . '</loc>' .
+        "\n\t\t" . '<lastmod>' . date( "Y-m-d\TH:i:s", current_time( 'timestamp', 0 ) ) . $tempo . '</lastmod>' .
+        "\n\t" . '</url>' . "\n";
 
-	foreach( $postsForSitemap as $post ) {
-		setup_postdata( $post);
-		$postdate = explode( " ", $post->post_modified );
-		$sitemap .= "\t" . '<url>' . "\n" .
-		"\t\t" . '<loc>' . get_permalink( $post->ID ) . '</loc>' .
-		"\n\t\t" . '<lastmod>' . $postdate[0] . 'T' . $postdate[1] . $tempo . '</lastmod>' .
-		"\n\t" . '</url>' . "\n";
-	}
+    foreach( $postsForSitemap as $post ) {
+    setup_postdata( $post);
+    $postdate = explode( " ", $post->post_modified );
+    $sitemap .= "\t" . '<url>' . "\n" .
+        "\t\t" . '<loc>' . get_permalink( $post->ID ) . '</loc>' .
+        "\n\t\t" . '<lastmod>' . $postdate[0] . 'T' . $postdate[1] . $tempo . '</lastmod>' .
+        "\n\t" . '</url>' . "\n";
+    }
 
-	$sitemap .= '</urlset>';
-	$fp = fopen( ABSPATH . "sitemap.xml", 'w' );
-	fwrite( $fp, $sitemap );
-	fclose( $fp );
+    $sitemap .= '</urlset>';
+$fp = fopen( ABSPATH . "sitemap.xml", 'w' );
+fwrite( $fp, $sitemap );
+fclose( $fp );
 }
 
 function sseo_delete_sitemap() {
-	if(file_exists(ABSPATH . "sitemap.xml")) {
-		unlink (ABSPATH . "sitemap.xml");
-	}
+if(file_exists(ABSPATH . "sitemap.xml")) {
+unlink (ABSPATH . "sitemap.xml");
+}
 }
 
 $option_name = 'sseo_activate_sitemap';
 
-add_action('added_option', function( $option_name ) {
-
-	$sitemapactivated = esc_attr(get_option('sseo_activate_sitemap'));
-
-	// Generate or delete sitemap, depending on settings
-	if($sitemapactivated) {
-		sseo_generate_sitemap();
-	} else {
-		sseo_delete_sitemap();
-	}
-
+add_action('wp_loaded', function( $option_name ) {
+if ( is_admin() ) {
+$sitemapactivated = esc_attr(get_option('sseo_activate_sitemap'));
+// Generate or delete sitemap, depending on settings
+if($sitemapactivated) {
+sseo_generate_sitemap();
+} else {
+sseo_delete_sitemap();
+}
+}
 }, 10, 2);
 
 add_action( 'save_post', function() {
 
-	$sitemapactivated = esc_attr(get_option('sseo_activate_sitemap'));
+$sitemapactivated = esc_attr(get_option('sseo_activate_sitemap'));
 
-	// Generate or delete sitemap, depending on settings
-	if($sitemapactivated) {
-		sseo_generate_sitemap();
-	} else {
-		sseo_delete_sitemap();
-	}
+// Generate or delete sitemap, depending on settings
+if($sitemapactivated) {
+sseo_generate_sitemap();
+} else {
+sseo_delete_sitemap();
+}
 
 } );
 

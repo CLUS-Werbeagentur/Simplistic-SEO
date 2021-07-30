@@ -4,8 +4,8 @@ Donate link: https://www.paypal.me/walkeezy
 Plugin URI: https://github.com/Walkeezy/Simplistic-SEO
 Tags: seo, search engine, metatags, titletag, metadescription, sitemap xml, sitemap.xml, google
 Requires at least: 4.4
-Tested up to: 5
-Stable tag: 1.4
+Tested up to: 5.8
+Stable tag: 1.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -51,8 +51,14 @@ Planed for future releases:
 
 == Changelog ==
 
+= 1.5 =
+*Release date: 2021-07-27*
+
+* Prevent WPError after plugin updates
+
 = 1.4 =
 *Release date: 2018-08-07*
+
 * Added support for Twitter cards.
 * Tested up to WordPress 5.0.
 
