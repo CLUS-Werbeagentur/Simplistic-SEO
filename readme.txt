@@ -51,6 +51,13 @@ Planed for future releases:
 
 == Changelog ==
 
+= 1.6 =
+*Release date: 2021-XX-XX*
+
+* Added option to select on which post types seo settings should be displayed
+* Only rebuild sitemap on save_post or if file isn't existing anymore
+* Removed xsl-stylesheet from sitemap.xml
+
 = 1.5 =
 *Release date: 2021-07-27*
 
