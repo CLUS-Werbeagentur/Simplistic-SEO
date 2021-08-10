@@ -2,9 +2,9 @@
 /*
 * Plugin Name: Simplistic SEO
 * Description: Everything you need for basic SEO in one simple plugin.
-* Version: 1.5
+* Version: 1.6
 * Author: Kevin Walker, Roman Peterhans
-* Author URI: http://walkeezy.ch
+* Author URI: https://clus.ch
 * Text Domain: simplistic-seo
 * Domain Path: /lang
 * License: GPL2
@@ -82,14 +82,17 @@ function sseo_generate_metadescription($postid) {
 function sseo_title() {
 	global $post;
 	if($post){
-		// Get title from post meta
-		$sseo_title_string = get_post_meta($post->ID, '_sseo_title', true);
-		// If empty, get default title pattern
-		if(empty($sseo_title_string)) {
-			$sseo_title_string = esc_attr(get_option('sseo_title_pattern', '{pagetitle} – {sitetitle}'));
-		}
-		$sseo_title = sseo_generate_title($sseo_title_string);
-		return $sseo_title;
+    $active_post_types = sseo_get_active_post_type();
+    if (in_array($post->post_type, $active_post_types)) {
+      // Get title from post meta
+      $sseo_title_string = get_post_meta($post->ID, '_sseo_title', true);
+      // If empty, get default title pattern
+      if(empty($sseo_title_string)) {
+        $sseo_title_string = esc_attr(get_option('sseo_title_pattern', '{pagetitle} – {sitetitle}'));
+      }
+      $sseo_title = sseo_generate_title($sseo_title_string);
+      return $sseo_title;
+    }
 	}
 }
 
@@ -110,18 +113,21 @@ if(esc_attr(get_option('sseo_activate_twittercard'))){
 function sseo_metadescription() {
 	global $post;
 	if($post){
-		// Get description from post meta
-		$sseo_description = get_post_meta($post->ID, '_sseo_metadescription', true);
-		// If empty, get default meta description
-		if(empty($sseo_description)) {
-			$sseo_description = sseo_generate_metadescription($post->ID);
-		}
-		if(!empty($sseo_description)){
-      echo '<meta name="description" content="'.esc_attr($sseo_description).'"/>'."\n";
-      if(esc_attr(get_option('sseo_activate_twittercard'))){
-        echo '<meta name="twitter:description" content="'.esc_attr($sseo_description).'"/>'."\n";
+    $active_post_types = sseo_get_active_post_type();
+      if (in_array($post->post_type, $active_post_types)) {
+      // Get description from post meta
+      $sseo_description = get_post_meta($post->ID, '_sseo_metadescription', true);
+      // If empty, get default meta description
+      if(empty($sseo_description)) {
+        $sseo_description = sseo_generate_metadescription($post->ID);
       }
-		}
+      if(!empty($sseo_description)){
+        echo '<meta name="description" content="'.esc_attr($sseo_description).'"/>'."\n";
+        if(esc_attr(get_option('sseo_activate_twittercard'))){
+          echo '<meta name="twitter:description" content="'.esc_attr($sseo_description).'"/>'."\n";
+        }
+      }
+    }
 	}
 }
 
@@ -152,82 +158,105 @@ function sseo_adminmenu() {
 
 add_action( 'admin_menu', 'sseo_adminmenu' );
 
-function sseo_settingspage() { ?>
+function sseo_settingspage() {
+  $sseo_post_types = sseo_get_post_types(); ?>
 
-<div class="wrap">
-    <h1><?php _e('SEO settings', 'simplistic-seo'); ?></h1>
-    <form method="post" action="options.php">
-        <?php settings_fields( 'sseo_settings' );
+	<div class="wrap">
+		<h1><?php _e('SEO settings', 'simplistic-seo'); ?></h1>
+		<form method="post" action="options.php">
+			<?php settings_fields( 'sseo_settings' );
 			do_settings_sections( 'sseo_settings' ); ?>
 
-        <table class="form-table">
-            <tbody>
-                <tr>
-                    <th scope="row">
-                        <label for="sseo_title_pattern"><?php _e('Title', 'simplistic-seo'); ?></label>
-                    </th>
-                    <td>
-                        <input name="sseo_title_pattern" type="text" class="regular-text" id="sseo_title_pattern"
-                            value="<?php echo esc_attr(get_option('sseo_title_pattern', '{pagetitle} – {sitetitle}')); ?>" />
-                        <p class="description">
-                            <?php _e('The title will be generated following this pattern, if there is no other title specified for a post or page.', 'simplistic-seo'); ?>
-                        </p>
-                        <p class="description"><?php _e('Placeholder:', 'simplistic-seo'); ?> <a
-                                class="sseo-input-placeholder" data-placeholder="{sitetitle}"
-                                data-target="sseo_title_pattern"><?php _e('Sitetitle', 'simplistic-seo'); ?></a><a
-                                class="sseo-input-placeholder" data-placeholder="{sitedesc}"
-                                data-target="sseo_title_pattern"><?php _e('Sitedescription', 'simplistic-seo'); ?></a><a
-                                class="sseo-input-placeholder" data-placeholder="{pagetitle}"
-                                data-target="sseo_title_pattern"><?php _e('Pagetitle', 'simplistic-seo'); ?></a></p>
-                    </td>
-                </tr>
-                <tr>
-                    <th scope="row"><?php _e('Sitemap XML', 'simplistic-seo'); ?></th>
-                    <td>
-                        <fieldset>
-                            <legend class="screen-reader-text">
-                                <span><?php _e('Sitemap XML', 'simplistic-seo'); ?></span></legend>
-                            <label for="sseo_activate_sitemap">
-                                <input name="sseo_activate_sitemap" type="checkbox" id="sseo_activate_sitemap" value="1"
-                                    <?php checked( 1, get_option( 'sseo_activate_sitemap' ), true ); ?>>
-                                <?php _e('Generate sitemap.xml automatically', 'simplistic-seo'); ?>
-                            </label>
-                            <?php if(file_exists(ABSPATH . "sitemap.xml")) { ?>
-                            <p><?php _e('Sitemap URL:', 'simplistic-seo'); ?> <a
-                                    href="<?php echo esc_url(bloginfo('url') . '/sitemap.xml'); ?>"
-                                    target="_blank"><?php echo esc_url(bloginfo('url') . '/sitemap.xml'); ?></a></p>
-                            <?php } ?>
-                        </fieldset>
-                    </td>
-                </tr>
-                <tr>
-                    <th scope="row"><?php _e('Twitter cards', 'simplistic-seo'); ?></th>
-                    <td>
-                        <fieldset>
-                            <legend class="screen-reader-text">
-                                <span><?php _e('Twitter cards', 'simplistic-seo'); ?></span></legend>
-                            <label for="sseo_activate_twittercard">
-                                <input name="sseo_activate_twittercard" type="checkbox" id="sseo_activate_twittercard"
-                                    value="1" <?php checked( 1, get_option( 'sseo_activate_twittercard' ), true ); ?>>
-                                <?php _e('Enable Twitter cards', 'simplistic-seo'); ?>
-                            </label>
-                        </fieldset>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+      <h2><?php _e('Title and Metadescription', 'simplistic-seo'); ?></h2>
 
-        <?php submit_button(); ?>
+			<table class="form-table">
+				<tbody>
+					<tr>
+						<th scope="row">
+							<label for="sseo_title_pattern"><?php _e('Post-Types', 'simplistic-seo'); ?></label>
+						</th>
+						<td>
+              <p class="description"><?php _e('Active or deactive SEO settings for the following post types.', 'simplistic-seo'); ?></p>
+              <?php if ( $sseo_post_types ) { ?>
+                <ul>
+                  <?php foreach ( $sseo_post_types  as $post_type ) {
+                    $option_name = 'sseo_activate_type_'.$post_type->name; ?>
+                    <li>
+                      <label for="<?php echo $option_name; ?>">
+                        <input name="<?php echo $option_name; ?>" type="checkbox" id="<?php echo $option_name; ?>" value="1" <?php checked( 1, get_option( $option_name ), true ); ?> >
+                        <?php echo $post_type->label; ?>
+                      </label>
+                    </li>
+                  <?php } ?>
+                </ul>
+              <?php } ?>
+            </td>
+					</tr>
+          <tr>
+						<th scope="row">
+							<label for="sseo_title_pattern"><?php _e('Title', 'simplistic-seo'); ?></label>
+						</th>
+						<td>
+							<input name="sseo_title_pattern" type="text" class="regular-text" id="sseo_title_pattern" value="<?php echo esc_attr(get_option('sseo_title_pattern', '{pagetitle} – {sitetitle}')); ?>" />
+							<p class="description"><?php _e('The title will be generated following this pattern, if there is no other title specified for a post or page.', 'simplistic-seo'); ?></p>
+							<p class="description"><?php _e('Placeholder:', 'simplistic-seo'); ?> <a class="sseo-input-placeholder" data-placeholder="{sitetitle}" data-target="sseo_title_pattern"><?php _e('Sitetitle', 'simplistic-seo'); ?></a><a class="sseo-input-placeholder" data-placeholder="{sitedesc}" data-target="sseo_title_pattern"><?php _e('Sitedescription', 'simplistic-seo'); ?></a><a class="sseo-input-placeholder" data-placeholder="{pagetitle}" data-target="sseo_title_pattern"><?php _e('Pagetitle', 'simplistic-seo'); ?></a></p>
+						</td>
+					</tr>
+				</tbody>
+			</table>
 
-    </form>
-</div>
+      <h2><?php _e('Sitemap & Twitter Cards', 'simplistic-seo'); ?></h2>
+
+      <table class="form-table">
+				<tbody>
+					<tr>
+						<th scope="row"><?php _e('Sitemap XML', 'simplistic-seo'); ?></th>
+						<td>
+							<fieldset>
+								<legend class="screen-reader-text"><span><?php _e('Sitemap XML', 'simplistic-seo'); ?></span></legend>
+								<label for="sseo_activate_sitemap">
+									<input name="sseo_activate_sitemap" type="checkbox" id="sseo_activate_sitemap" value="1" <?php checked( 1, get_option( 'sseo_activate_sitemap' ), true ); ?> >
+									<?php _e('Generate sitemap.xml automatically', 'simplistic-seo'); ?>
+								</label>
+								<?php if(file_exists(ABSPATH . "sitemap.xml")) { ?>
+									<p><?php _e('Sitemap URL:', 'simplistic-seo'); ?> <a href="<?php echo esc_url(bloginfo('url') . '/sitemap.xml'); ?>" target="_blank"><?php echo esc_url(bloginfo('url') . '/sitemap.xml'); ?></a></p>
+								<?php } ?>
+							</fieldset>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php _e('Twitter cards', 'simplistic-seo'); ?></th>
+						<td>
+							<fieldset>
+								<legend class="screen-reader-text"><span><?php _e('Twitter cards', 'simplistic-seo'); ?></span></legend>
+								<label for="sseo_activate_twittercard">
+									<input name="sseo_activate_twittercard" type="checkbox" id="sseo_activate_twittercard" value="1" <?php checked( 1, get_option( 'sseo_activate_twittercard' ), true ); ?> >
+									<?php _e('Enable Twitter cards', 'simplistic-seo'); ?>
+								</label>
+							</fieldset>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+
+			<?php submit_button(); ?>
+
+		</form>
+	</div>
 
 <?php }
 
 function seo_register_settings() {
+  $sseo_post_types = sseo_get_post_types();
 	register_setting( 'sseo_settings', 'sseo_title_pattern' );
   register_setting( 'sseo_settings', 'sseo_activate_sitemap' );
   register_setting( 'sseo_settings', 'sseo_activate_twittercard' );
+  if ( $sseo_post_types ) {
+    foreach ( $sseo_post_types as $post_type ) {
+      $option_name = 'sseo_activate_type_'.$post_type->name;
+      register_setting( 'sseo_settings', $option_name );
+    }
+  }
 }
 
 add_action( 'admin_init', 'seo_register_settings' );
@@ -237,14 +266,8 @@ add_action( 'admin_init', 'seo_register_settings' );
 //-----------------------------------------------------------------------
 
 function sseo_register_metabox() {
-	// Get all custom post types
-	$post_types = get_post_types( array('_builtin' => false), 'names', 'and');
-	// Add standard post types
-	$posttypes_array = array('post', 'page');
-	foreach ($post_types  as $post_type ) {
-		$posttypes_array[] = $post_type;
-	}
-	add_meta_box( 'sseo-metabox', __('SEO settings', 'simplistic-seo'), 'sseo_render_metabox', $posttypes_array, 'normal', 'low' );
+  $active_post_types = sseo_get_active_post_type();
+	add_meta_box( 'sseo-metabox', __('SEO settings', 'simplistic-seo'), 'sseo_render_metabox', $active_post_types, 'normal', 'low' );
 }
 
 add_action( 'add_meta_boxes', 'sseo_register_metabox' );
@@ -319,44 +342,51 @@ add_action( 'save_post', 'sseo_save_metabox' );
 // SITEMAP
 //-----------------------------------------------------------------------
 
-function sseo_generate_sitemap() {
-
-	$sitemap = '';
-
-	if ( str_replace( '-', '', get_option( 'gmt_offset' ) ) < 10 ) {
-		$tempo = '-0' . str_replace( '-', '', get_option( 'gmt_offset' ) );
-	} else {
-		$tempo = get_option( 'gmt_offset' );
-	}
-
-	if( strlen( $tempo ) == 3 ) {
-		$tempo = $tempo . ':00';
-	}
-
-	$postsForSitemap = get_posts(array( 'numberposts' => -1, 'orderby' => 'modified', 'post_type' => 'any', 'order' => 'DESC' ));
-	$sitemap .= '<?xml version="1.0" encoding="UTF-8"?>' . '
-<?xml-stylesheet type="text/xsl" href="' . esc_url( home_url( '/' ) ) . 'sitemap.xsl"?>';
-$sitemap .= "\n" . '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
-    xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
-    $sitemap .= "\t" . '<url>' . "\n" .
-        "\t\t" . '<loc>' . esc_url( home_url( '/' ) ) . '</loc>' .
-        "\n\t\t" . '<lastmod>' . date( "Y-m-d\TH:i:s", current_time( 'timestamp', 0 ) ) . $tempo . '</lastmod>' .
-        "\n\t" . '</url>' . "\n";
-
-    foreach( $postsForSitemap as $post ) {
-    setup_postdata( $post);
-    $postdate = explode( " ", $post->post_modified );
-    $sitemap .= "\t" . '<url>' . "\n" .
-        "\t\t" . '<loc>' . get_permalink( $post->ID ) . '</loc>' .
-        "\n\t\t" . '<lastmod>' . $postdate[0] . 'T' . $postdate[1] . $tempo . '</lastmod>' .
-        "\n\t" . '</url>' . "\n";
+function sseo_generate_sitemap($is_initial) {
+  $build_sitemap = false;
+  $existing_sitemap = ABSPATH . "sitemap.xml";
+  if($is_initial && !file_exists($existing_sitemap)){
+    $build_sitemap = true;
+  }
+  if(!$is_initial){
+    $build_sitemap = true;
+  }
+  if ($build_sitemap) {
+    $sitemap = '';
+    if ( str_replace( '-', '', get_option( 'gmt_offset' ) ) < 10 ) {
+      $tempo = '-0' . str_replace( '-', '', get_option( 'gmt_offset' ) );
+    } else {
+      $tempo = get_option( 'gmt_offset' );
     }
 
-    $sitemap .= '</urlset>';
-$fp = fopen( ABSPATH . "sitemap.xml", 'w' );
-fwrite( $fp, $sitemap );
-fclose( $fp );
+    if( strlen( $tempo ) == 3 ) {
+      $tempo = $tempo . ':00';
+    }
+
+    $postsForSitemap = get_posts(array( 'numberposts' => -1, 'orderby' => 'modified', 'post_type' => 'any', 'order' => 'DESC' ));
+    $sitemap .= '<?xml version="1.0" encoding="UTF-8"?>';
+    $sitemap .= "\n" . '<urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+      $sitemap .= "\t" . '<url>' . "\n" .
+          "\t\t" . '<loc>' . esc_url( home_url( '/' ) ) . '</loc>' .
+          "\n\t\t" . '<lastmod>' . date( "Y-m-d\TH:i:s", current_time( 'timestamp', 0 ) ) . $tempo . '</lastmod>' .
+          "\n\t" . '</url>' . "\n";
+
+      foreach( $postsForSitemap as $post ) {
+      setup_postdata( $post);
+      $postdate = explode( " ", $post->post_modified );
+      $sitemap .= "\t" . '<url>' . "\n" .
+          "\t\t" . '<loc>' . get_permalink( $post->ID ) . '</loc>' .
+          "\n\t\t" . '<lastmod>' . $postdate[0] . 'T' . $postdate[1] . $tempo . '</lastmod>' .
+          "\n\t" . '</url>' . "\n";
+      }
+
+      $sitemap .= '</urlset>';
+      $fp = fopen( ABSPATH . "sitemap.xml", 'w' );
+      fwrite( $fp, $sitemap );
+      fclose( $fp );
+  }
 }
 
 function sseo_delete_sitemap() {
@@ -372,7 +402,7 @@ if ( is_admin() ) {
 $sitemapactivated = esc_attr(get_option('sseo_activate_sitemap'));
 // Generate or delete sitemap, depending on settings
 if($sitemapactivated) {
-sseo_generate_sitemap();
+sseo_generate_sitemap(true);
 } else {
 sseo_delete_sitemap();
 }
@@ -385,11 +415,40 @@ $sitemapactivated = esc_attr(get_option('sseo_activate_sitemap'));
 
 // Generate or delete sitemap, depending on settings
 if($sitemapactivated) {
-sseo_generate_sitemap();
+sseo_generate_sitemap(false);
 } else {
 sseo_delete_sitemap();
 }
 
 } );
+
+
+// GET POST TYPES
+//-----------------------------------------------------------------------
+
+function sseo_get_post_types() {
+  $post_types = get_post_types( array( 'public' => true, 'publicly_queryable' => true), 'objects', 'or' );
+  foreach($post_types as $key => $type){
+    if($type->name === 'attachment') { // Removed attachments
+      unset($post_types[$key]);
+    }
+  }
+  return $post_types;
+}
+
+function sseo_get_active_post_type() {
+  $sseo_post_types = sseo_get_post_types();
+  $active_post_types = array();
+  if ( $sseo_post_types ) {
+    foreach ( $sseo_post_types as $post_type ) {
+      $option_name = 'sseo_activate_type_'.$post_type->name;
+      $isSet =  esc_attr(get_option( $option_name ));
+      if($isSet){
+        array_push($active_post_types, $post_type->name);
+      }
+    }
+  }
+  return $active_post_types;
+}
 
 ?>
